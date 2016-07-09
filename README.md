@@ -16,3 +16,5 @@ This extension provides autocomplete and validation for `App settings` and `Conn
 
 Look for `Configuration Sense` in `ReSharper -> Extension manager`.
 [ReSharper Gallery](https://resharper-plugins.jetbrains.com/packages/Resharper.ConfigurationSense/)
+
+Inspired by [ReSharper.InternalsVisibleTo](https://github.com/hmemcpy/ReSharper.InternalsVisibleTo/)
