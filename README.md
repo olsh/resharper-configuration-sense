@@ -1,9 +1,16 @@
 #Configuration Sense for ReSharper
 
 This extension provides autocomplete and validation for `App settings` and `Connection strings`.  
-See the demo
 
-![Demo](https://github.com/olsh/resharper-bootstrap-templates/raw/master/images/demo.gif)
+###App settings autocomplete
+
+![App settings](https://github.com/olsh/resharper-configuration-sense/raw/master/images/app-settings.png)
+
+###Connection strings autocomplete
+![Connection strings](https://github.com/olsh/resharper-configuration-sense/raw/master/images/connections-strings.png)
+
+###Warnings
+![Validation](https://github.com/olsh/resharper-configuration-sense/raw/master/images/app-settings-warning.png)
 
 ##Installation
 
