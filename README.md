@@ -15,4 +15,4 @@ This extension provides autocomplete and validation for `App settings` and `Conn
 ##Installation
 
 Look for `Configuration Sense` in `ReSharper -> Extension manager`.
-[ReSharper Gallery](https://resharper-plugins.jetbrains.com/packages/Bootstrap3.LiveTemplates/)
+[ReSharper Gallery](https://resharper-plugins.jetbrains.com/packages/Resharper.ConfigurationSense/)
