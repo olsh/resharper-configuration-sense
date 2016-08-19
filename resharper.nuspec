@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>Resharper.ConfigurationSense</id>
-        <version>2016.1</version>
+        <version>2016.2</version>
         <title>Configuration Sense</title>
         <authors>Oleg Shevchenko</authors>
         <owners>Oleg Shevchenko</owners>
@@ -13,10 +13,10 @@
         <language>en-US</language>
         <tags>resharper configuration autocomplete intellisense validation</tags>
         <dependencies>
-            <dependency id="Wave" version="[5.0]" />
+            <dependency id="Wave" version="[6.0]" />
         </dependencies>
     </metadata>
     <files>
-	  <file src="src\Resharper.ConfigurationSense\bin\Release\Resharper.ConfigurationSense.dll" target="dotFiles\" />
+	  <file src="src\bin\Release\Resharper.ConfigurationSense.dll" target="dotFiles\" />
     </files>    
 </package>
