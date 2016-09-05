@@ -7,8 +7,7 @@ using Resharper.ConfigurationSense.Highlights;
 
 [assembly:
     RegisterConfigurableSeverity(SettingsNotFoundHighlighting.SeverityId, null, HighlightingGroupIds.CompilerWarnings,
-        "The setting wasn't found in configuration files",
-        "The setting wasn't found in configuration files", 
+        "The setting wasn't found in configuration files", "The setting wasn't found in configuration files",
         Severity.WARNING, false)]
 
 namespace Resharper.ConfigurationSense.Highlights
@@ -16,49 +15,40 @@ namespace Resharper.ConfigurationSense.Highlights
     [ConfigurableSeverityHighlighting(SeverityId, CSharpLanguage.Name, OverlapResolve = OverlapResolveKind.WARNING)]
     public class SettingsNotFoundHighlighting : IHighlighting
     {
-        #region Fields
-
         public const string SeverityId = "SettingNotFoundInConfiguration";
 
-        private readonly IElementAccessExpression _expression;
+        private readonly IArgumentList _argumentList;
 
-        #endregion
+        private readonly ICSharpArgumentsOwner _argumentsOwner;
 
-        #region Constructors
-
-        public SettingsNotFoundHighlighting(IElementAccessExpression expression, string key, string type)
+        public SettingsNotFoundHighlighting(
+            ICSharpArgumentsOwner argumentsOwner,
+            IArgumentList argumentList,
+            string key,
+            string type)
         {
-            _expression = expression;
+            _argumentsOwner = argumentsOwner;
+            _argumentList = argumentList;
             ToolTip = $"{type} {key} wasn't found in cofiguration files";
         }
-
-        #endregion
-
-        #region Properties
 
         public string ErrorStripeToolTip => ToolTip;
 
         public string ToolTip { get; }
 
-        #endregion
-
-        #region Methods
+        public DocumentRange CalculateRange()
+        {
+            return _argumentList.GetHighlightingRange();
+        }
 
         public bool IsValid()
         {
-            if (_expression != null)
+            if (_argumentsOwner != null)
             {
-                return _expression.IsValid();
+                return _argumentsOwner.IsValid();
             }
 
             return true;
         }
-
-        public DocumentRange CalculateRange()
-        {
-            return _expression.ArgumentList.GetHighlightingRange();
-        }
-
-        #endregion
     }
 }

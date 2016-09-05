@@ -1,6 +1,4 @@
-﻿using JetBrains.Metadata.Reader.API;
-using JetBrains.Metadata.Reader.Impl;
-using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure;
+﻿using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure;
 using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure.LookupItems;
 using JetBrains.ReSharper.Feature.Services.CSharp.CodeCompletion.Infrastructure;
 using JetBrains.ReSharper.Psi;
@@ -16,36 +14,19 @@ namespace Resharper.ConfigurationSense.SuggestionProviders
     [Language(typeof(CSharpLanguage))]
     public class AppSettingsSuggestionProvider : ItemsProviderOfSpecificContext<CSharpCodeCompletionContext>
     {
-        #region Fields
+        private readonly IGenericSettingsProvider _genericSettingsProvider;
 
-        private readonly IClrTypeName _appSettingsClrName = new ClrTypeName(ClrTypeConstants.AppSettingsClrType);
-
-        private readonly IGenericKeyValueSettingsProvider _genericKeyValueSettingsProvider;
-
-        #endregion
-
-        #region Constructors
-
-        public AppSettingsSuggestionProvider(IGenericKeyValueSettingsProvider genericKeyValueSettingsProvider)
+        public AppSettingsSuggestionProvider(IGenericSettingsProvider genericSettingsProvider)
         {
-            _genericKeyValueSettingsProvider = genericKeyValueSettingsProvider;
-        }
-
-        #endregion
-
-        #region Methods
-
-        protected override bool IsAvailable(CSharpCodeCompletionContext context)
-        {
-            return context.IsInsideElement(_appSettingsClrName);
+            _genericSettingsProvider = genericSettingsProvider;
         }
 
         protected override bool AddLookupItems(CSharpCodeCompletionContext context, GroupedItemsCollector collector)
         {
-            var lookupItems = _genericKeyValueSettingsProvider.GetLookupItems(
-                context, 
-                SettingsConstants.AppSettingsTagName, 
-                SettingsConstants.AppSettingsKeyAttribute, 
+            var lookupItems = _genericSettingsProvider.GetXmlSettingsLookupItems(
+                context,
+                SettingsConstants.AppSettingsTagName,
+                SettingsConstants.AppSettingsKeyAttribute,
                 SettingsConstants.AppSettingsValueAttribute);
 
             if (!lookupItems.Any())
@@ -61,6 +42,9 @@ namespace Resharper.ConfigurationSense.SuggestionProviders
             return true;
         }
 
-        #endregion
+        protected override bool IsAvailable(CSharpCodeCompletionContext context)
+        {
+            return context.IsInsideAccessorPath(ClrTypeConstants.AppSettingsPath);
+        }
     }
 }

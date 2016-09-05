@@ -13,15 +13,13 @@ using Resharper.ConfigurationSense.Models;
 
 namespace Resharper.ConfigurationSense.Analyzers
 {
-    [ElementProblemAnalyzer(typeof(IElementAccessExpression), 
-        HighlightingTypes = new[] { typeof(SettingsNotFoundHighlighting) })]
-    public class ValidSettingsAnalyzer : ElementProblemAnalyzer<IElementAccessExpression>
+    [ElementProblemAnalyzer(typeof(IInvocationExpression),
+         HighlightingTypes = new[] { typeof(SettingsNotFoundHighlighting) })]
+    public class InvocationExpressionSettingsAnalyzer : ElementProblemAnalyzer<IInvocationExpression>
     {
-        #region Methods
-
         protected override void Run(
-            IElementAccessExpression element, 
-            ElementProblemAnalyzerData data, 
+            IInvocationExpression element,
+            ElementProblemAnalyzerData data,
             IHighlightingConsumer consumer)
         {
             var arguments = element.ArgumentList.Arguments;
@@ -42,8 +40,8 @@ namespace Resharper.ConfigurationSense.Analyzers
                 return;
             }
 
-            var accessorClrtype = element.GetAccessorClrType();
-            if (string.IsNullOrEmpty(accessorClrtype))
+            var methodPath = element.GetMethodPath();
+            if (string.IsNullOrEmpty(methodPath))
             {
                 return;
             }
@@ -55,22 +53,11 @@ namespace Resharper.ConfigurationSense.Analyzers
             }
 
             IEnumerable<KeyValueSetting> keyValueSettings;
-            string type;
-            if (accessorClrtype == ClrTypeConstants.AppSettingsClrType)
+            if (methodPath == ClrTypeConstants.NetCoreGetConnectionString)
             {
-                keyValueSettings = project.GetProjectSettings(
-                    SettingsConstants.AppSettingsTagName, 
-                    SettingsConstants.AppSettingsKeyAttribute, 
-                    SettingsConstants.AppSettingsValueAttribute);
-                type = "App setting";
-            }
-            else if (accessorClrtype == ClrTypeConstants.ConnectionStringsClrType)
-            {
-                keyValueSettings = project.GetProjectSettings(
-                    SettingsConstants.ConnectionStringTagName, 
-                    SettingsConstants.ConnectionStringsKeyAttribute, 
-                    SettingsConstants.ConnectionStringsValueAttribute);
-                type = "Connection string";
+                keyValueSettings = project.GetJsonProjectSettings(
+                    FileNames.NetCoreJsonSettings,
+                    SettingsConstants.NetCoreConnectionStringsJsonPath);
             }
             else
             {
@@ -85,9 +72,8 @@ namespace Resharper.ConfigurationSense.Analyzers
                 }
             }
 
-            consumer.AddHighlighting(new SettingsNotFoundHighlighting(element, stringValue, type));
+            consumer.AddHighlighting(
+                new SettingsNotFoundHighlighting(element, element.ArgumentList, stringValue, "Connection string"));
         }
-
-        #endregion
     }
 }

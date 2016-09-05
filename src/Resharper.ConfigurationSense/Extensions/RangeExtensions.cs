@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Linq;
 
-using JetBrains.Metadata.Reader.API;
 using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure;
 using JetBrains.ReSharper.Feature.Services.CSharp.CodeCompletion.Infrastructure;
 using JetBrains.ReSharper.Psi.CSharp.Util.Literals;
@@ -11,8 +11,6 @@ namespace Resharper.ConfigurationSense.Extensions
 {
     public static class RangeExtensions
     {
-        #region Methods
-
         public static TextLookupRanges EvaluateRanges(this CSharpCodeCompletionContext context)
         {
             var basicContext = context.BasicContext;
@@ -21,31 +19,56 @@ namespace Resharper.ConfigurationSense.Extensions
             var caretTreeOffset = basicContext.CaretTreeOffset;
             var tokenNode = basicContext.File.FindTokenAt(caretTreeOffset) as ITokenNode;
 
-            if (tokenNode != null && tokenNode.IsAnyStringLiteral())
+            if ((tokenNode != null) && tokenNode.IsAnyStringLiteral())
             {
                 documentRange = tokenNode.GetDocumentRange().TextRange;
             }
 
             var replaceRange = new TextRange(
-                documentRange.StartOffset, 
-                Math.Max(documentRange.EndOffset, selectedRange.EndOffset));
+                                   documentRange.StartOffset,
+                                   Math.Max(documentRange.EndOffset, selectedRange.EndOffset));
 
             return new TextLookupRanges(replaceRange, replaceRange);
         }
 
-        public static bool IsInsideElement(this CSharpCodeCompletionContext context, IClrTypeName typeName)
+        public static bool IsInsideAccessorPath(this CSharpCodeCompletionContext context, string path)
         {
             var nodeAt = context.BasicContext.File.FindNodeAt(context.BasicContext.CaretDocumentRange);
 
-            var accessorClrType = nodeAt.GetAccessorClrType();
+            var accessorPath = nodeAt.GetAccessorPath();
+            if (accessorPath == null)
+            {
+                return false;
+            }
+
+            return accessorPath.Equals(path);
+        }
+
+
+        public static bool IsInsideMethodPath(this CSharpCodeCompletionContext context, string path)
+        {
+            var nodeAt = context.BasicContext.File.FindNodeAt(context.BasicContext.CaretDocumentRange);
+
+            var accessorPath = nodeAt.GetMethodPath();
+            if (accessorPath == null)
+            {
+                return false;
+            }
+
+            return accessorPath.Equals(path);
+        }
+
+        public static bool IsInsideAccessorType(this CSharpCodeCompletionContext context, string accessorType)
+        {
+            var nodeAt = context.BasicContext.File.FindNodeAt(context.BasicContext.CaretDocumentRange);
+            
+            var accessorClrType = nodeAt.GetAccessorSuperTypes();
             if (accessorClrType == null)
             {
                 return false;
             }
 
-            return accessorClrType.Equals(typeName.FullName);
+            return accessorClrType.Any(t => t.ToString().Equals(accessorType, StringComparison.OrdinalIgnoreCase));
         }
-
-        #endregion
     }
 }

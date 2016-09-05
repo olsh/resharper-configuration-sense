@@ -8,13 +8,7 @@ namespace Resharper.ConfigurationSense.Models
 {
     public class KeyValueSettingLookupItem : TextLookupItem
     {
-        #region Fields
-
         private readonly KeyValueSetting _keyValueSetting;
-
-        #endregion
-
-        #region Constructors
 
         public KeyValueSettingLookupItem(KeyValueSetting keyValueSetting, IconId image, IRangeMarker rangeMarker)
             : base(GetCompleteText(keyValueSetting), image)
@@ -22,10 +16,6 @@ namespace Resharper.ConfigurationSense.Models
             _keyValueSetting = keyValueSetting;
             VisualReplaceRangeMarker = rangeMarker;
         }
-
-        #endregion
-
-        #region Methods
 
         protected override RichText GetDisplayName()
         {
@@ -39,7 +29,5 @@ namespace Resharper.ConfigurationSense.Models
         {
             return $"\"{keyValueSetting.Key}\"";
         }
-
-        #endregion
     }
 }

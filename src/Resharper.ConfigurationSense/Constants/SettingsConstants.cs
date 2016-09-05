@@ -2,8 +2,6 @@
 {
     internal static class SettingsConstants
     {
-        #region Fields
-
         public const string AppSettingsKeyAttribute = "key";
 
         public const string AppSettingsTagName = "appSettings";
@@ -18,6 +16,6 @@
 
         public const string ExternalConfigTagName = "configSource";
 
-        #endregion
+        public const string NetCoreConnectionStringsJsonPath = "ConnectionStrings:";
     }
 }

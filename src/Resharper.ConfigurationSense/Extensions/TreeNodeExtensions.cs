@@ -1,4 +1,8 @@
-﻿using JetBrains.ReSharper.Psi;
+﻿using System.Collections.Generic;
+using System.Linq;
+
+using JetBrains.Annotations;
+using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.CSharp.Tree;
 using JetBrains.ReSharper.Psi.Tree;
 
@@ -6,21 +10,46 @@ namespace Resharper.ConfigurationSense.Extensions
 {
     public static class TreeNodeExtensions
     {
-        #region Methods
-
-        public static string GetAccessorClrType(this ITreeNode treeNode)
+        [CanBeNull]
+        public static string GetAccessorPath(this ITreeNode treeNode)
         {
-            while (!(treeNode is IElementAccessExpression) && treeNode != null)
-            {
-                treeNode = treeNode.Parent;
-            }
-
-            var referenceExpression = treeNode?.FirstChild as IReferenceExpression;
-            if (referenceExpression == null)
+            IReferenceExpression referenceExpression;
+            if (TryFindReferenceExpression<IElementAccessExpression>(treeNode, out referenceExpression))
             {
                 return null;
             }
 
+            return GetReferencePath(referenceExpression);
+        }
+
+        public static IEnumerable<IDeclaredType> GetAccessorSuperTypes(this ITreeNode treeNode)
+        {
+            IReferenceExpression referenceExpression;
+            if (TryFindReferenceExpression<IElementAccessExpression>(treeNode, out referenceExpression))
+            {
+                return Enumerable.Empty<IDeclaredType>();
+            }
+
+            var typeOwner = referenceExpression.Reference.Resolve().DeclaredElement as ITypeOwner;
+            var declaredType = typeOwner?.Type as IDeclaredType;
+
+            return declaredType?.GetSuperTypes();
+        }
+
+        [CanBeNull]
+        public static string GetMethodPath(this ITreeNode treeNode)
+        {
+            IReferenceExpression referenceExpression;
+            if (TryFindReferenceExpression<IInvocationExpression>(treeNode, out referenceExpression))
+            {
+                return null;
+            }
+
+            return GetReferencePath(referenceExpression);
+        }
+
+        private static string GetReferencePath(IReferenceExpression referenceExpression)
+        {
             var typeMember = referenceExpression.Reference.Resolve().DeclaredElement as ITypeMember;
 
             var containingType = typeMember?.GetContainingType();
@@ -32,6 +61,22 @@ namespace Resharper.ConfigurationSense.Extensions
             return $"{containingType.GetClrName()}.{typeMember.ShortName}";
         }
 
-        #endregion
+        private static bool TryFindReferenceExpression<T>(
+            ITreeNode treeNode,
+            out IReferenceExpression referenceExpression)
+        {
+            while (!(treeNode is T) && (treeNode != null))
+            {
+                treeNode = treeNode.Parent;
+            }
+
+            referenceExpression = treeNode?.FirstChild as IReferenceExpression;
+            if (referenceExpression == null)
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

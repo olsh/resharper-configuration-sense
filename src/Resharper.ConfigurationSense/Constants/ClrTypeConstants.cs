@@ -2,12 +2,13 @@
 {
     public static class ClrTypeConstants
     {
-        #region Fields
+        public const string AppSettingsPath = "System.Configuration.ConfigurationManager.AppSettings";
 
-        public const string AppSettingsClrType = "System.Configuration.ConfigurationManager.AppSettings";
+        public const string ConnectionStringsPath = "System.Configuration.ConfigurationManager.ConnectionStrings";
 
-        public const string ConnectionStringsClrType = "System.Configuration.ConfigurationManager.ConnectionStrings";
+        public const string NetCoreConfiguration = "Microsoft.Extensions.Configuration.IConfiguration";
 
-        #endregion
+        public const string NetCoreGetConnectionString =
+            "Microsoft.Extensions.Configuration.ConfigurationExtensions.GetConnectionString";
     }
 }

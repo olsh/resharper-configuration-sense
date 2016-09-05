@@ -12,23 +12,18 @@ using Resharper.ConfigurationSense.Extensions;
 namespace Resharper.ConfigurationSense.SuggestionProviders
 {
     [Language(typeof(CSharpLanguage))]
-    public class ConnectionStringsSuggestionProvider : ItemsProviderOfSpecificContext<CSharpCodeCompletionContext>
+    public class NetCoreConfigurationSuggestionProvider : ItemsProviderOfSpecificContext<CSharpCodeCompletionContext>
     {
         private readonly IGenericSettingsProvider _settingsProvider;
 
-        public ConnectionStringsSuggestionProvider(IGenericSettingsProvider settingsProvider)
+        public NetCoreConfigurationSuggestionProvider(IGenericSettingsProvider settingsProvider)
         {
             _settingsProvider = settingsProvider;
         }
 
         protected override bool AddLookupItems(CSharpCodeCompletionContext context, GroupedItemsCollector collector)
         {
-            var lookupItems = _settingsProvider.GetXmlSettingsLookupItems(
-                context,
-                SettingsConstants.ConnectionStringTagName,
-                SettingsConstants.ConnectionStringsKeyAttribute,
-                SettingsConstants.ConnectionStringsValueAttribute);
-
+            var lookupItems = _settingsProvider.GetJsonSettingsLookupItems(context, FileNames.NetCoreJsonSettings);
             if (!lookupItems.Any())
             {
                 return false;
@@ -44,7 +39,7 @@ namespace Resharper.ConfigurationSense.SuggestionProviders
 
         protected override bool IsAvailable(CSharpCodeCompletionContext context)
         {
-            return context.IsInsideAccessorPath(ClrTypeConstants.ConnectionStringsPath);
+            return context.IsInsideAccessorType(ClrTypeConstants.NetCoreConfiguration);
         }
     }
 }
