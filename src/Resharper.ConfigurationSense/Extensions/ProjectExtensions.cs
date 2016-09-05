@@ -23,7 +23,7 @@ namespace Resharper.ConfigurationSense.Extensions
             string settingsKeyAttribute, 
             string settingsValueAttributes)
         {
-            var result = new LinkedList<KeyValueSetting>();
+            var result = new HashSet<KeyValueSetting>(KeyValueSetting.KeyComparer);
 
             var configFiles = GetConfigFiles(project);
 

@@ -17,6 +17,7 @@
         </dependencies>
     </metadata>
     <files>
-	  <file src="src\bin\Release\Resharper.ConfigurationSense.dll" target="dotFiles\" />
+	  <file src="src\Resharper.ConfigurationSense\bin\Debug\Resharper.ConfigurationSense.dll" target="dotFiles\" />
+	  <file src="src\Resharper.ConfigurationSense\bin\Debug\Resharper.ConfigurationSense.pdb" target="dotFiles\" />
     </files>    
 </package>
