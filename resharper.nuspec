@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>Resharper.ConfigurationSense</id>
-        <version>2016.2</version>
+        <version>$version$</version>
         <title>Configuration Sense</title>
         <authors>Oleg Shevchenko</authors>
         <owners>Oleg Shevchenko</owners>
@@ -11,13 +11,13 @@
         <iconUrl>https://raw.githubusercontent.com/olsh/resharper-configuration-sense/master/images/logo.png</iconUrl>
         <description>Provides autocomplete and validation for App settings and Connections strings</description>
         <language>en-US</language>
-        <tags>resharper configuration autocomplete intellisense validation</tags>
+        <tags>resharper configuration autocomplete intellisense validation netcore</tags>
         <dependencies>
-            <dependency id="Wave" version="[6.0]" />
+            <dependency id="Wave" version="$ReSharperVer$" />
         </dependencies>
     </metadata>
     <files>
-	  <file src="src\Resharper.ConfigurationSense\bin\Debug\Resharper.ConfigurationSense.dll" target="dotFiles\" />
-	  <file src="src\Resharper.ConfigurationSense\bin\Debug\Resharper.ConfigurationSense.pdb" target="dotFiles\" />
+	  <file src="src\Resharper.ConfigurationSense\bin\$configuration$\Resharper.ConfigurationSense.dll" target="dotFiles\" />
+	  <file src="src\Resharper.ConfigurationSense\bin\$configuration$\Resharper.ConfigurationSense.pdb" target="dotFiles\" />
     </files>    
 </package>
