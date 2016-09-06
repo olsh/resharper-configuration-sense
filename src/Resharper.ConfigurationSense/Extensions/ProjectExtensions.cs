@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
+using JetBrains.Annotations;
 using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.Util;
@@ -29,14 +31,15 @@ namespace Resharper.ConfigurationSense.Extensions
             var settings = new HashSet<KeyValueSetting>(KeyValueSetting.KeyComparer);
             foreach (var projectFile in configFiles)
             {
-                var primaryPsiFile = projectFile.GetPrimaryPsiFile();
-                var text = primaryPsiFile.GetUnquotedText();
-                var json = JObject.Parse(text);
+                var json = ParseJsonProjectFile(projectFile);
 
                 var properties = new Queue<JProperty>();
-                foreach (var property in json.Properties())
+                properties.EnqueueRange(json.Properties());
+
+                var secretsJson = ReadSecretsJsonSafe(project);
+                if (secretsJson != null)
                 {
-                    properties.Enqueue(property);
+                    properties.EnqueueRange(secretsJson.Properties());
                 }
 
                 while (properties.Count > 0)
@@ -145,6 +148,46 @@ namespace Resharper.ConfigurationSense.Extensions
                     file =>
                         file.Name.Equals(FileNames.WebConfig, StringComparison.OrdinalIgnoreCase)
                         || file.Name.Equals(FileNames.AppConfig, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static JObject ParseJsonProjectFile(IProjectFile projectFile)
+        {
+            var primaryPsiFile = projectFile.GetPrimaryPsiFile();
+            var text = primaryPsiFile.GetUnquotedText();
+            return JObject.Parse(text);
+        }
+
+        [CanBeNull]
+        private static JObject ReadSecretsJsonSafe(IProject project)
+        {
+            var projectFiles =
+                project.GetAllProjectFiles(
+                    file => file.Name.Equals(FileNames.NetCoreProjectJson, StringComparison.OrdinalIgnoreCase));
+
+            foreach (var projectFile in projectFiles)
+            {
+                try
+                {
+                    var json = JObject.Parse(projectFile.GetPrimaryPsiFile().GetUnquotedText());
+                    var userSecretsId = json[SettingsConstants.NetCoreUserSecretsIdJsonProperty];
+
+                    if ((userSecretsId != null) && (userSecretsId.Type == JTokenType.String))
+                    {
+                        var filePath = string.Format(
+                            FileNames.UserSecretsPathFormat,
+                            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                            userSecretsId.Value<string>());
+
+                        var secretsFile = File.ReadAllText(filePath);
+                        return JObject.Parse(secretsFile);
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            return null;
         }
     }
 }

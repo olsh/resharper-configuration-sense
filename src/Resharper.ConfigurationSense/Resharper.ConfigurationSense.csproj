@@ -167,6 +167,7 @@
     <Compile Include="Constants\ClrTypeConstants.cs" />
     <Compile Include="Constants\FileNames.cs" />
     <Compile Include="Constants\SettingsConstants.cs" />
+    <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\ProjectExtensions.cs" />
     <Compile Include="Extensions\RangeExtensions.cs" />
     <Compile Include="Extensions\TreeNodeExtensions.cs" />

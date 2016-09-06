@@ -17,5 +17,7 @@
         public const string ExternalConfigTagName = "configSource";
 
         public const string NetCoreConnectionStringsJsonPath = "ConnectionStrings:";
+
+        public const string NetCoreUserSecretsIdJsonProperty = "userSecretsId";
     }
 }
