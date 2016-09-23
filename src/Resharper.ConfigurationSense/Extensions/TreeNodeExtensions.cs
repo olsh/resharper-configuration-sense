@@ -6,6 +6,8 @@ using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.CSharp.Tree;
 using JetBrains.ReSharper.Psi.Tree;
 
+using NuGet;
+
 namespace Resharper.ConfigurationSense.Extensions
 {
     public static class TreeNodeExtensions
@@ -32,8 +34,15 @@ namespace Resharper.ConfigurationSense.Extensions
 
             var typeOwner = referenceExpression.Reference.Resolve().DeclaredElement as ITypeOwner;
             var declaredType = typeOwner?.Type as IDeclaredType;
+            if (declaredType == null)
+            {
+                return Enumerable.Empty<IDeclaredType>();
+            }
 
-            return declaredType?.GetSuperTypes();
+            var declaredTypes = new HashSet<IDeclaredType> { declaredType };
+            declaredTypes.AddRange(declaredType.GetSuperTypes());
+
+            return declaredTypes;
         }
 
         [CanBeNull]
