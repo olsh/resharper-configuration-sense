@@ -4,7 +4,7 @@
     {
         public const string AppConfig = "app.config";
 
-        public const string NetCoreJsonSettings = "appsettings.json";
+        public const string NetCoreAppSettingsJson = "appsettings.json";
 
         public const string NetCoreProjectJson = "project.json";
 

@@ -25,8 +25,7 @@ namespace Resharper.ConfigurationSense.Extensions
             string fileName,
             string searchPath = null)
         {
-            var configFiles =
-                project.GetAllProjectFiles(file => file.Name.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+            var configFiles = GetNetCoreJsonConfigFiles(project);
 
             var settings = new HashSet<KeyValueSetting>(KeyValueSetting.KeyComparer);
             foreach (var projectFile in configFiles)
@@ -148,6 +147,15 @@ namespace Resharper.ConfigurationSense.Extensions
                     file =>
                         file.Name.Equals(FileNames.WebConfig, StringComparison.OrdinalIgnoreCase)
                         || file.Name.Equals(FileNames.AppConfig, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static IEnumerable<IProjectFile> GetNetCoreJsonConfigFiles(IProject project)
+        {
+            return
+                project.GetAllProjectFiles(
+                    file =>
+                        file.Name.Equals(FileNames.NetCoreAppSettingsJson, StringComparison.OrdinalIgnoreCase)
+                        || file.Name.Equals(FileNames.NetCoreProjectJson, StringComparison.OrdinalIgnoreCase));
         }
 
         private static JObject ParseJsonProjectFile(IProjectFile projectFile)

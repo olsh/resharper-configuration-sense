@@ -76,7 +76,7 @@ namespace Resharper.ConfigurationSense.Analyzers
             var accessorSuperTypes = element.GetAccessorSuperTypes();
             if (accessorSuperTypes.Any(t => t.ToString().Equals(ClrTypeConstants.NetCoreConfiguration, StringComparison.OrdinalIgnoreCase)))
             {
-                keyValueSettings = project.GetJsonProjectSettings(FileNames.NetCoreJsonSettings);
+                keyValueSettings = project.GetJsonProjectSettings(FileNames.NetCoreAppSettingsJson);
                 type = "Setting";
             }
 

@@ -56,7 +56,7 @@ namespace Resharper.ConfigurationSense.Analyzers
             if (methodPath == ClrTypeConstants.NetCoreGetConnectionString)
             {
                 keyValueSettings = project.GetJsonProjectSettings(
-                    FileNames.NetCoreJsonSettings,
+                    FileNames.NetCoreAppSettingsJson,
                     SettingsConstants.NetCoreConnectionStringsJsonPath);
             }
             else
