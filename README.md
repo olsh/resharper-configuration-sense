@@ -1,5 +1,7 @@
 #Configuration Sense for ReSharper
 
+[![Build status](https://ci.appveyor.com/api/projects/status/d2u5scm7t3d373qj?svg=true)](https://ci.appveyor.com/project/olsh/resharper-configuration-sense)
+
 This extension provides autocomplete and validation for `App settings` and `Connection strings`.  
 
 ![Demo](https://github.com/olsh/resharper-configuration-sense/raw/master/images/demo.gif)

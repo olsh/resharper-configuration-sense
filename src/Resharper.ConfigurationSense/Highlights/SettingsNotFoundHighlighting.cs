@@ -8,7 +8,7 @@ using Resharper.ConfigurationSense.Highlights;
 [assembly:
     RegisterConfigurableSeverity(SettingsNotFoundHighlighting.SeverityId, null, HighlightingGroupIds.CompilerWarnings,
         "The setting wasn't found in configuration files", "The setting wasn't found in configuration files",
-        Severity.WARNING, false)]
+        Severity.WARNING)]
 
 namespace Resharper.ConfigurationSense.Highlights
 {

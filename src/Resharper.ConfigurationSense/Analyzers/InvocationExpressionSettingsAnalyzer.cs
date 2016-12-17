@@ -55,9 +55,7 @@ namespace Resharper.ConfigurationSense.Analyzers
             IEnumerable<KeyValueSetting> keyValueSettings;
             if (methodPath == ClrTypeConstants.NetCoreGetConnectionString)
             {
-                keyValueSettings = project.GetJsonProjectSettings(
-                    FileNames.NetCoreAppSettingsJson,
-                    SettingsConstants.NetCoreConnectionStringsJsonPath);
+                keyValueSettings = project.GetJsonProjectSettings(SettingsConstants.NetCoreConnectionStringsJsonPath);
             }
             else
             {

@@ -36,7 +36,7 @@ namespace Resharper.ConfigurationSense.Components
             }
 
             var rangeMarker = CreateRangeMarker(context);
-            var settings = project.GetJsonProjectSettings(fileName, jsonPath);
+            var settings = project.GetJsonProjectSettings(jsonPath);
 
             return CreateLookupItems(context, settings, project, rangeMarker, lookupItems);
         }

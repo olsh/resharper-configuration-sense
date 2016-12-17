@@ -22,7 +22,6 @@ namespace Resharper.ConfigurationSense.Extensions
     {
         public static IEnumerable<KeyValueSetting> GetJsonProjectSettings(
             this IProject project,
-            string fileName,
             string searchPath = null)
         {
             var configFiles = GetNetCoreJsonConfigFiles(project);

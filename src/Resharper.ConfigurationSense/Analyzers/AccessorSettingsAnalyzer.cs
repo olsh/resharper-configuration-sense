@@ -43,7 +43,10 @@ namespace Resharper.ConfigurationSense.Analyzers
             }
 
             var accessorPath = element.GetAccessorPath();
-            if (string.IsNullOrEmpty(accessorPath))
+            var accessorSuperTypes = element.GetAccessorSuperTypes();
+
+            // ReSharper disable once PossibleMultipleEnumeration
+            if (string.IsNullOrEmpty(accessorPath) && !accessorSuperTypes.Any())
             {
                 return;
             }
@@ -73,10 +76,10 @@ namespace Resharper.ConfigurationSense.Analyzers
                 type = "Connection string";
             }
 
-            var accessorSuperTypes = element.GetAccessorSuperTypes();
+            // ReSharper disable once PossibleMultipleEnumeration
             if (accessorSuperTypes.Any(t => t.ToString().Equals(ClrTypeConstants.NetCoreConfiguration, StringComparison.OrdinalIgnoreCase)))
             {
-                keyValueSettings = project.GetJsonProjectSettings(FileNames.NetCoreAppSettingsJson);
+                keyValueSettings = project.GetJsonProjectSettings();
                 type = "Setting";
             }
 
