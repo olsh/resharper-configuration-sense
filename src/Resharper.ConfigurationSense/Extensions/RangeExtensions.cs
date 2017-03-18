@@ -44,7 +44,6 @@ namespace Resharper.ConfigurationSense.Extensions
             return accessorPath.Equals(path);
         }
 
-
         public static bool IsInsideMethodPath(this CSharpCodeCompletionContext context, string path)
         {
             var nodeAt = context.BasicContext.File.FindNodeAt(context.BasicContext.CaretDocumentRange);

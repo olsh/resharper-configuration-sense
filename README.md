@@ -1,4 +1,4 @@
-#Configuration Sense for ReSharper
+# Configuration Sense for ReSharper
 
 [![Build status](https://ci.appveyor.com/api/projects/status/d2u5scm7t3d373qj?svg=true)](https://ci.appveyor.com/project/olsh/resharper-configuration-sense)
 
@@ -6,7 +6,7 @@ This extension provides autocomplete and validation for `App settings` and `Conn
 
 ![Demo](https://github.com/olsh/resharper-configuration-sense/raw/master/images/demo.gif)
 
-##Installation
+## Installation
 
 Look for `Configuration Sense` in `ReSharper -> Extension manager`.
 [ReSharper Gallery](https://resharper-plugins.jetbrains.com/packages/Resharper.ConfigurationSense/)

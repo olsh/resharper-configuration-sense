@@ -53,9 +53,16 @@ namespace Resharper.ConfigurationSense.Analyzers
             }
 
             IEnumerable<KeyValueSetting> keyValueSettings;
+            string type;
             if (methodPath == ClrTypeConstants.NetCoreGetConnectionString)
             {
-                keyValueSettings = project.GetJsonProjectSettings(SettingsConstants.NetCoreConnectionStringsJsonPath);
+                keyValueSettings = project.GetJsonProjectSettings(JsonSettingType.Value, SettingsConstants.NetCoreConnectionStringsJsonPath);
+                type = "Connection string";
+            }
+            else if (methodPath == ClrTypeConstants.NetCoreGetSection)
+            {
+                keyValueSettings = project.GetJsonProjectSettings(JsonSettingType.Object);
+                type = "Section";
             }
             else
             {
@@ -71,7 +78,7 @@ namespace Resharper.ConfigurationSense.Analyzers
             }
 
             consumer.AddHighlighting(
-                new SettingsNotFoundHighlighting(element, element.ArgumentList, stringValue, "Connection string"));
+                new SettingsNotFoundHighlighting(element, element.ArgumentList, stringValue, type));
         }
     }
 }

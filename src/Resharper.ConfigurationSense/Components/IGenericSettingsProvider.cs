@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 using JetBrains.ReSharper.Feature.Services.CSharp.CodeCompletion.Infrastructure;
 
+using Resharper.ConfigurationSense.Constants;
 using Resharper.ConfigurationSense.Models;
 
 namespace Resharper.ConfigurationSense.Components
@@ -10,7 +11,7 @@ namespace Resharper.ConfigurationSense.Components
     {
         LinkedList<KeyValueSettingLookupItem> GetJsonSettingsLookupItems(
             CSharpCodeCompletionContext context,
-            string fileName,
+            JsonSettingType settingType,
             string jsonPath = null);
 
         LinkedList<KeyValueSettingLookupItem> GetXmlSettingsLookupItems(

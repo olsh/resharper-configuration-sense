@@ -22,6 +22,7 @@ namespace Resharper.ConfigurationSense.Extensions
     {
         public static IEnumerable<KeyValueSetting> GetJsonProjectSettings(
             this IProject project,
+            JsonSettingType settingType,
             string searchPath = null)
         {
             var configFiles = GetNetCoreJsonConfigFiles(project);
@@ -48,17 +49,28 @@ namespace Resharper.ConfigurationSense.Extensions
                         continue;
                     }
 
+                    string formattedPath = null;
+
                     if (property.Value.Type == JTokenType.Object)
                     {
                         foreach (var nestedProperty in ((JObject)property.Value).Properties())
                         {
                             properties.Enqueue(nestedProperty);
                         }
+                    }
+                    
+                    if ((property.Value.Type == JTokenType.Object && settingType == JsonSettingType.Object)
+                        || (property.Value.Type != JTokenType.Object && property.Value.Type != JTokenType.Array
+                             && settingType == JsonSettingType.Value))
+                    {
+                        formattedPath = FormatJsonPath(property);
+                    }
 
+                    if (string.IsNullOrEmpty(formattedPath))
+                    {
                         continue;
                     }
 
-                    var formattedPath = FormatJsonPath(property);
                     if (!string.IsNullOrEmpty(searchPath))
                     {
                         if (formattedPath.StartsWith(searchPath, StringComparison.OrdinalIgnoreCase))
@@ -153,8 +165,7 @@ namespace Resharper.ConfigurationSense.Extensions
             return
                 project.GetAllProjectFiles(
                     file =>
-                        file.Name.Equals(FileNames.NetCoreAppSettingsJson, StringComparison.OrdinalIgnoreCase)
-                        || file.Name.Equals(FileNames.NetCoreProjectJson, StringComparison.OrdinalIgnoreCase));
+                        file.Name.Equals(FileNames.NetCoreAppSettingsJson, StringComparison.OrdinalIgnoreCase));
         }
 
         private static JObject ParseJsonProjectFile(IProjectFile projectFile)
@@ -175,10 +186,10 @@ namespace Resharper.ConfigurationSense.Extensions
             {
                 try
                 {
-                    var json = JObject.Parse(projectFile.GetPrimaryPsiFile().GetUnquotedText());
+                    var json = ParseJsonProjectFile(projectFile);
                     var userSecretsId = json[SettingsConstants.NetCoreUserSecretsIdJsonProperty];
 
-                    if ((userSecretsId != null) && (userSecretsId.Type == JTokenType.String))
+                    if (userSecretsId != null && userSecretsId.Type == JTokenType.String)
                     {
                         var filePath = string.Format(
                             FileNames.UserSecretsPathFormat,
@@ -189,6 +200,8 @@ namespace Resharper.ConfigurationSense.Extensions
                         return JObject.Parse(secretsFile);
                     }
                 }
+                // ReSharper disable once EmptyGeneralCatchClause
+                // ReSharper disable once CatchAllClause
                 catch (Exception)
                 {
                 }

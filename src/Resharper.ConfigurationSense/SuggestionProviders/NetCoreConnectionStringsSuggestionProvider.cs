@@ -26,7 +26,7 @@ namespace Resharper.ConfigurationSense.SuggestionProviders
         {
             var lookupItems = _settingsProvider.GetJsonSettingsLookupItems(
                 context,
-                FileNames.NetCoreAppSettingsJson,
+                JsonSettingType.Value,
                 SettingsConstants.NetCoreConnectionStringsJsonPath);
 
             if (!lookupItems.Any())

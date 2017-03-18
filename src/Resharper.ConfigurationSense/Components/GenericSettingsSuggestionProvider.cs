@@ -7,6 +7,7 @@ using JetBrains.ReSharper.Feature.Services.CSharp.CodeCompletion.Infrastructure;
 using JetBrains.ReSharper.Psi.Tree;
 using JetBrains.Util;
 
+using Resharper.ConfigurationSense.Constants;
 using Resharper.ConfigurationSense.Extensions;
 using Resharper.ConfigurationSense.Models;
 
@@ -24,7 +25,7 @@ namespace Resharper.ConfigurationSense.Components
 
         public LinkedList<KeyValueSettingLookupItem> GetJsonSettingsLookupItems(
             CSharpCodeCompletionContext context,
-            string fileName,
+            JsonSettingType settingType,
             string jsonPath = null)
         {
             var lookupItems = new LinkedList<KeyValueSettingLookupItem>();
@@ -36,7 +37,7 @@ namespace Resharper.ConfigurationSense.Components
             }
 
             var rangeMarker = CreateRangeMarker(context);
-            var settings = project.GetJsonProjectSettings(jsonPath);
+            var settings = project.GetJsonProjectSettings(settingType, jsonPath);
 
             return CreateLookupItems(context, settings, project, rangeMarker, lookupItems);
         }

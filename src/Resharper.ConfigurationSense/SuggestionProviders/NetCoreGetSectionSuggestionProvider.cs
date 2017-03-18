@@ -12,20 +12,22 @@ using Resharper.ConfigurationSense.Extensions;
 namespace Resharper.ConfigurationSense.SuggestionProviders
 {
     [Language(typeof(CSharpLanguage))]
-    public class NetCoreConfigurationSuggestionProvider : ItemsProviderOfSpecificContext<CSharpCodeCompletionContext>
+    public class NetCoreGetSectionSuggestionProvider :
+        ItemsProviderOfSpecificContext<CSharpCodeCompletionContext>
     {
         private readonly IGenericSettingsProvider _settingsProvider;
 
-        public NetCoreConfigurationSuggestionProvider(IGenericSettingsProvider settingsProvider)
+        public NetCoreGetSectionSuggestionProvider(IGenericSettingsProvider settingsProvider)
         {
             _settingsProvider = settingsProvider;
         }
 
         protected override bool AddLookupItems(CSharpCodeCompletionContext context, GroupedItemsCollector collector)
         {
-            LogEvent.CreateWithMessage(LoggingLevel.WARN, "Demo", "AddLookupItems");
+            LogEvent.CreateWithMessage(LoggingLevel.WARN, "Demo", "Shit");
 
-            var lookupItems = _settingsProvider.GetJsonSettingsLookupItems(context, JsonSettingType.Value);
+            var lookupItems = _settingsProvider.GetJsonSettingsLookupItems(context, JsonSettingType.Object);
+
             if (!lookupItems.Any())
             {
                 return false;
@@ -41,7 +43,7 @@ namespace Resharper.ConfigurationSense.SuggestionProviders
 
         protected override bool IsAvailable(CSharpCodeCompletionContext context)
         {
-            return context.IsInsideAccessorType(ClrTypeConstants.NetCoreConfiguration);
+            return context.IsInsideMethodPath(ClrTypeConstants.NetCoreGetSection);
         }
     }
 }

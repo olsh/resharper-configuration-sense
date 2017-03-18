@@ -79,7 +79,7 @@ namespace Resharper.ConfigurationSense.Analyzers
             // ReSharper disable once PossibleMultipleEnumeration
             if (accessorSuperTypes.Any(t => t.ToString().Equals(ClrTypeConstants.NetCoreConfiguration, StringComparison.OrdinalIgnoreCase)))
             {
-                keyValueSettings = project.GetJsonProjectSettings();
+                keyValueSettings = project.GetJsonProjectSettings(JsonSettingType.Value);
                 type = "Setting";
             }
 
