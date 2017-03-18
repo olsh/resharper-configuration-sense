@@ -64,6 +64,11 @@ namespace Resharper.ConfigurationSense.Analyzers
                 keyValueSettings = project.GetJsonProjectSettings(JsonSettingType.Object);
                 type = "Section";
             }
+            else if (methodPath == ClrTypeConstants.NetCoreGetValue)
+            {
+                keyValueSettings = project.GetJsonProjectSettings(JsonSettingType.Value);
+                type = "Setting";
+            }
             else
             {
                 return;

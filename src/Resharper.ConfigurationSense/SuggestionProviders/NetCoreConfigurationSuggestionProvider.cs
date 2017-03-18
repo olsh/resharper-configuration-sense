@@ -23,8 +23,6 @@ namespace Resharper.ConfigurationSense.SuggestionProviders
 
         protected override bool AddLookupItems(CSharpCodeCompletionContext context, GroupedItemsCollector collector)
         {
-            LogEvent.CreateWithMessage(LoggingLevel.WARN, "Demo", "AddLookupItems");
-
             var lookupItems = _settingsProvider.GetJsonSettingsLookupItems(context, JsonSettingType.Value);
             if (!lookupItems.Any())
             {
@@ -41,7 +39,8 @@ namespace Resharper.ConfigurationSense.SuggestionProviders
 
         protected override bool IsAvailable(CSharpCodeCompletionContext context)
         {
-            return context.IsInsideAccessorType(ClrTypeConstants.NetCoreConfiguration);
+            return context.IsInsideAccessorType(ClrTypeConstants.NetCoreConfiguration)
+                   || context.IsInsideMethodPath(ClrTypeConstants.NetCoreGetValue);
         }
     }
 }

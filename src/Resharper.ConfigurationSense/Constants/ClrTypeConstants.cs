@@ -12,5 +12,7 @@
             "Microsoft.Extensions.Configuration.ConfigurationExtensions.GetConnectionString";
 
         public const string NetCoreGetSection = "Microsoft.Extensions.Configuration.IConfiguration.GetSection";
+
+        public const string NetCoreGetValue = "Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue";
     }
 }

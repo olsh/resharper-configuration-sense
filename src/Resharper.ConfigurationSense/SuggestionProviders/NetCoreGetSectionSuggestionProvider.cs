@@ -24,8 +24,6 @@ namespace Resharper.ConfigurationSense.SuggestionProviders
 
         protected override bool AddLookupItems(CSharpCodeCompletionContext context, GroupedItemsCollector collector)
         {
-            LogEvent.CreateWithMessage(LoggingLevel.WARN, "Demo", "Shit");
-
             var lookupItems = _settingsProvider.GetJsonSettingsLookupItems(context, JsonSettingType.Object);
 
             if (!lookupItems.Any())
