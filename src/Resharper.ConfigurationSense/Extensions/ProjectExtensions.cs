@@ -58,7 +58,7 @@ namespace Resharper.ConfigurationSense.Extensions
                             properties.Enqueue(nestedProperty);
                         }
                     }
-                    
+
                     if ((property.Value.Type == JTokenType.Object && settingType == JsonSettingType.Object)
                         || (property.Value.Type != JTokenType.Object && property.Value.Type != JTokenType.Array
                              && settingType == JsonSettingType.Value))

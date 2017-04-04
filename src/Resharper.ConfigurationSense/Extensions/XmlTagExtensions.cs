@@ -12,8 +12,8 @@ namespace Resharper.ConfigurationSense.Extensions
         #region Methods
 
         public static IEnumerable<KeyValueSetting> GetChildSettings(
-            this IXmlTag xmlTag, 
-            string keyAttribute, 
+            this IXmlTag xmlTag,
+            string keyAttribute,
             string valueAttribute)
         {
             var result = new LinkedList<KeyValueSetting>();

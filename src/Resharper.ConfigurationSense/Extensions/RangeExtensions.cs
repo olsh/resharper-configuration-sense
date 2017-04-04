@@ -60,7 +60,7 @@ namespace Resharper.ConfigurationSense.Extensions
         public static bool IsInsideAccessorType(this CSharpCodeCompletionContext context, string accessorType)
         {
             var nodeAt = context.BasicContext.File.FindNodeAt(context.BasicContext.CaretDocumentRange);
-            
+
             var accessorClrType = nodeAt.GetAccessorSuperTypes();
             if (accessorClrType == null)
             {
