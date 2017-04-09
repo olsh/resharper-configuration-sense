@@ -248,3 +248,6 @@ paket-files/
 .idea/
 *.sln.iml
 
+# Cake
+tools/*
+!tools/packages.config

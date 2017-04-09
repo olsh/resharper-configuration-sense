@@ -83,7 +83,7 @@ namespace Resharper.ConfigurationSense.Extensions
                         }
                     }
 
-                    settings.Add(new KeyValueSetting { Key = formattedPath, Value = property.Value.ToString() });
+                    settings.Add(new KeyValueSetting(formattedPath, property.Value.ToString()));
                 }
             }
 

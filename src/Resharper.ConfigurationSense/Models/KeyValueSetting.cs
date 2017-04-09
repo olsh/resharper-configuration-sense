@@ -1,15 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using JetBrains.Annotations;
+
 namespace Resharper.ConfigurationSense.Models
 {
     public class KeyValueSetting : IEquatable<KeyValueSetting>
     {
+        public KeyValueSetting([NotNull] string key, [NotNull] string value)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            Value = value;
+            Key = key;
+        }
+
         public static IEqualityComparer<KeyValueSetting> KeyComparer { get; } = new KeyEqualityComparer();
 
-        public string Key { get; set; }
+        public string Key { get; }
 
-        public string Value { get; set; }
+        public string Value { get; }
 
         public bool Equals(KeyValueSetting other)
         {

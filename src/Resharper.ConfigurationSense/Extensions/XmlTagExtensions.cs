@@ -26,25 +26,26 @@ namespace Resharper.ConfigurationSense.Extensions
 
                 var attributes = currentXmlTag.GetAttributes();
 
-                var keyValueSetting = new KeyValueSetting();
+                string key = null;
+                string value = null;
                 foreach (var attribute in attributes)
                 {
                     if (attribute.XmlName.Equals(keyAttribute))
                     {
-                        keyValueSetting.Key = attribute.UnquotedValue;
+                        key = attribute.UnquotedValue;
                     }
                     else if (attribute.XmlName.Equals(valueAttribute))
                     {
-                        keyValueSetting.Value = attribute.UnquotedValue;
+                        value = attribute.UnquotedValue;
                     }
                 }
 
-                if (keyValueSetting.Key == null || keyValueSetting.Value == null)
+                if (key == null || value == null)
                 {
                     continue;
                 }
 
-                result.AddLast(keyValueSetting);
+                result.AddLast(new KeyValueSetting(key, value));
             }
 
             return result;
