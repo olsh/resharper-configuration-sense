@@ -11,8 +11,6 @@ using JetBrains.ReSharper.Psi.Xml.Tree;
 
 using Newtonsoft.Json.Linq;
 
-using NuGet;
-
 using Resharper.ConfigurationSense.Constants;
 using Resharper.ConfigurationSense.Models;
 
@@ -35,7 +33,7 @@ namespace Resharper.ConfigurationSense.Extensions
                 var properties = new Queue<JProperty>();
                 properties.EnqueueRange(json.Properties());
 
-                var secretsJson = ReadSecretsJsonSafe(project);
+                var secretsJson = ReadSecretsSafe(project);
                 if (secretsJson != null)
                 {
                     properties.EnqueueRange(secretsJson.Properties());
@@ -126,7 +124,7 @@ namespace Resharper.ConfigurationSense.Extensions
                     }
 
                     var settings = settingTag.GetChildSettings(settingsKeyAttribute, settingsValueAttributes);
-                    result.AddRange(settings);
+                    NuGet.CollectionExtensions.AddRange(result, settings);
                 }
             }
 
@@ -175,36 +173,59 @@ namespace Resharper.ConfigurationSense.Extensions
             return JObject.Parse(text);
         }
 
-        [CanBeNull]
-        private static JObject ReadSecretsJsonSafe(IProject project)
+        private static string GetUserSecretId(this IProject project)
         {
+            var xmlFile = project.ProjectFile?.GetPrimaryPsiFile() as IXmlFile;
+            var enumerable = xmlFile?.FindAllByTagName("UserSecretsId");
+            if (enumerable != null)
+            {
+                foreach (var xmlTag in enumerable)
+                {
+                    if (!string.IsNullOrEmpty(xmlTag.InnerValue))
+                    {
+                        return xmlTag.InnerValue;
+                    }
+                }
+            }
+
             var projectFiles =
                 project.GetAllProjectFiles(
                     file => file.Name.Equals(FileNames.NetCoreProjectJson, StringComparison.OrdinalIgnoreCase));
-
-            foreach (var projectFile in projectFiles)
+            foreach (var file in projectFiles)
             {
-                try
-                {
-                    var json = ParseJsonProjectFile(projectFile);
-                    var userSecretsId = json[SettingsConstants.NetCoreUserSecretsIdJsonProperty];
+                var jsonProjectFile = ParseJsonProjectFile(file);
 
-                    if (userSecretsId != null && userSecretsId.Type == JTokenType.String)
-                    {
-                        var filePath = string.Format(
-                            FileNames.UserSecretsPathFormat,
-                            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                            userSecretsId.Value<string>());
+                var jsonToken = jsonProjectFile[SettingsConstants.NetCoreUserSecretsIdJsonProperty];
 
-                        var secretsFile = File.ReadAllText(filePath);
-                        return JObject.Parse(secretsFile);
-                    }
-                }
-                // ReSharper disable once EmptyGeneralCatchClause
-                // ReSharper disable once CatchAllClause
-                catch (Exception)
+                if (jsonToken != null && jsonToken.Type == JTokenType.String)
                 {
+                    return jsonToken.Value<string>();
                 }
+            }
+
+            return null;
+        }
+
+        [CanBeNull]
+        private static JObject ReadSecretsSafe(IProject project)
+        {
+            try
+            {
+                var userSecretId = project.GetUserSecretId();
+
+                var filePath = string.Format(
+                    FileNames.UserSecretsPathFormat,
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    userSecretId);
+
+                var secretsFile = File.ReadAllText(filePath);
+
+                return JObject.Parse(secretsFile);
+            }
+            // ReSharper disable once EmptyGeneralCatchClause
+            // ReSharper disable once CatchAllClause
+            catch (Exception)
+            {
             }
 
             return null;

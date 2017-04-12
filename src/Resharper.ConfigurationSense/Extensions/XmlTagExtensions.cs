@@ -9,8 +9,6 @@ namespace Resharper.ConfigurationSense.Extensions
 {
     public static class XmlTagExtensions
     {
-        #region Methods
-
         public static IEnumerable<KeyValueSetting> GetChildSettings(
             this IXmlTag xmlTag,
             string keyAttribute,
@@ -65,7 +63,5 @@ namespace Resharper.ConfigurationSense.Extensions
 
             return null;
         }
-
-        #endregion
     }
 }
