@@ -3,7 +3,7 @@
 
 var target = Argument("target", "Default");
 var buildConfiguration = Argument("buildConfig", "Debug");
-var extensionsVersion = Argument("version", "2017.1.1");
+var extensionsVersion = Argument("version", "2017.1.2");
 var waveVersion = Argument("wave", "[8.0]");
 
 var projectName = "Resharper.ConfigurationSense";
