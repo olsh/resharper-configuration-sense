@@ -17,10 +17,10 @@ using Resharper.ConfigurationSense.Extensions;
 
 namespace Resharper.ConfigurationSense.Settings
 {
-    [OptionsPage(PageId, "ConfigurationSense", typeof(ServicesThemedIcons.ReSharperServices16x16), ParentId = EnvironmentPage.Pid)]
+    [OptionsPage(PageId, "Configuration Sense", typeof(BulbThemedIcons.YellowBulbVS), ParentId = EnvironmentPage.Pid)]
     public sealed class ConfigurationSenseOptionsPage : CustomSimpleOptionsPage
     {
-        private const string PageId = "ConfigurationSense";
+        private const string PageId = "Configuration Sense";
 
         public ConfigurationSenseOptionsPage(
             [NotNull] Lifetime lifetime,

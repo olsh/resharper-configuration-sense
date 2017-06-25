@@ -6,7 +6,7 @@ using JetBrains.Application.Settings.Store;
 
 namespace Resharper.ConfigurationSense.Settings
 {
-    public class ConfigurationSenseSettingsAccessor
+    public static class ConfigurationSenseSettingsAccessor
     {
         [NotNull]
         public static readonly Expression<Func<ConfigurationSenseSettings, IIndexedEntry<string, string>>> CustomConfigurationFiles = x => x.CustomConfigurationFiles;
