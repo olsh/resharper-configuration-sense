@@ -29,7 +29,7 @@ namespace Resharper.ConfigurationSense.Highlights
         {
             _argumentsOwner = argumentsOwner;
             _argumentList = argumentList;
-            ToolTip = $"{type} {key} wasn't found in cofiguration files";
+            ToolTip = $"{type} {key} wasn't found in configuration files";
         }
 
         public string ErrorStripeToolTip => ToolTip;

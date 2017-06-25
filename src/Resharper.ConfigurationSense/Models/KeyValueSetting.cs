@@ -9,18 +9,8 @@ namespace Resharper.ConfigurationSense.Models
     {
         public KeyValueSetting([NotNull] string key, [NotNull] string value)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            Value = value;
-            Key = key;
+            Value = value ?? throw new ArgumentNullException(nameof(value));
+            Key = key ?? throw new ArgumentNullException(nameof(key));
         }
 
         public static IEqualityComparer<KeyValueSetting> KeyComparer { get; } = new KeyEqualityComparer();
