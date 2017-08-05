@@ -4,7 +4,6 @@ using System.Linq;
 
 using JetBrains.Annotations;
 using JetBrains.Application.Settings;
-using JetBrains.UI.Options;
 
 using Newtonsoft.Json;
 
@@ -44,7 +43,7 @@ namespace Resharper.ConfigurationSense.Extensions
         }
 
         public static void SaveCustomConfigurationFiles(
-            this OptionsSettingsSmartContext optionsContext,
+            this IContextBoundSettingsStore optionsContext,
             string solutionId,
             IEnumerable<string> customConfigurationFiles)
         {

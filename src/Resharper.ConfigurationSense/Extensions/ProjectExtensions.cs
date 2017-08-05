@@ -90,7 +90,7 @@ namespace Resharper.ConfigurationSense.Extensions
         }
 
         public static IEnumerable<KeyValueSetting> GetXmlProjectSettings(
-            this IProject project,
+            this IProjectFolder project,
             string settingsTagName,
             string settingsKeyAttribute,
             string settingsValueAttributes)
@@ -132,7 +132,7 @@ namespace Resharper.ConfigurationSense.Extensions
             return result;
         }
 
-        private static string FormatJsonPath(JProperty property)
+        private static string FormatJsonPath(JToken property)
         {
             var formattedPath = property.Path.Replace(".", ":");
             return formattedPath;
@@ -150,7 +150,7 @@ namespace Resharper.ConfigurationSense.Extensions
             return collection;
         }
 
-        private static IEnumerable<IProjectFile> GetXmlConfigFiles(IProject project)
+        private static IEnumerable<IProjectFile> GetXmlConfigFiles(IProjectFolder project)
         {
             var additionalConfigurationFiles = project.GetSolution().GetAdditionalConfigurationFiles();
 
@@ -161,7 +161,7 @@ namespace Resharper.ConfigurationSense.Extensions
                             || additionalConfigurationFiles.Contains(file.GetPersistentID())));
         }
 
-        private static IEnumerable<IProjectFile> GetNetCoreJsonConfigFiles(IProject project)
+        private static IEnumerable<IProjectFile> GetNetCoreJsonConfigFiles(IProjectFolder project)
         {
             var additionalConfigurationFiles = project.GetSolution().GetAdditionalConfigurationFiles();
 
@@ -231,6 +231,7 @@ namespace Resharper.ConfigurationSense.Extensions
             // ReSharper disable once CatchAllClause
             catch (Exception)
             {
+                // Just swallow the exception
             }
 
             return null;

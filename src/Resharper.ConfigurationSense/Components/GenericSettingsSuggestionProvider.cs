@@ -3,6 +3,7 @@
 using JetBrains.Application;
 using JetBrains.DocumentModel;
 using JetBrains.ProjectModel;
+using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure;
 using JetBrains.ReSharper.Feature.Services.CSharp.CodeCompletion.Infrastructure;
 using JetBrains.ReSharper.Psi.Tree;
 using JetBrains.Util;
@@ -65,7 +66,7 @@ namespace Resharper.ConfigurationSense.Components
         private LinkedList<KeyValueSettingLookupItem> CreateLookupItems(
             CSharpCodeCompletionContext context,
             IEnumerable<KeyValueSetting> settings,
-            IProject project,
+            IProjectModelElement project,
             IRangeMarker rangeMarker,
             LinkedList<KeyValueSettingLookupItem> lookupItems)
         {
@@ -81,7 +82,7 @@ namespace Resharper.ConfigurationSense.Components
             return lookupItems;
         }
 
-        private IRangeMarker CreateRangeMarker(CSharpCodeCompletionContext context)
+        private IRangeMarker CreateRangeMarker(ISpecificCodeCompletionContext context)
         {
             var rangeMarker =
                 new TextRange(context.BasicContext.CaretDocumentRange.TextRange.StartOffset).CreateRangeMarker(

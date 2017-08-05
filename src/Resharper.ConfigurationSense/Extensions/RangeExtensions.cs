@@ -11,7 +11,7 @@ namespace Resharper.ConfigurationSense.Extensions
 {
     public static class RangeExtensions
     {
-        public static TextLookupRanges EvaluateRanges(this CSharpCodeCompletionContext context)
+        public static TextLookupRanges EvaluateRanges(this ISpecificCodeCompletionContext context)
         {
             var basicContext = context.BasicContext;
             var selectedRange = basicContext.SelectedRange.TextRange;
@@ -31,7 +31,7 @@ namespace Resharper.ConfigurationSense.Extensions
             return new TextLookupRanges(replaceRange, replaceRange);
         }
 
-        public static bool IsInsideAccessorPath(this CSharpCodeCompletionContext context, string path)
+        public static bool IsInsideAccessorPath(this ISpecificCodeCompletionContext context, string path)
         {
             var nodeAt = context.BasicContext.File.FindNodeAt(context.BasicContext.CaretDocumentRange);
 
@@ -44,7 +44,7 @@ namespace Resharper.ConfigurationSense.Extensions
             return accessorPath.Equals(path);
         }
 
-        public static bool IsInsideMethodPath(this CSharpCodeCompletionContext context, string path)
+        public static bool IsInsideMethodPath(this ISpecificCodeCompletionContext context, string path)
         {
             var nodeAt = context.BasicContext.File.FindNodeAt(context.BasicContext.CaretDocumentRange);
 
@@ -57,7 +57,7 @@ namespace Resharper.ConfigurationSense.Extensions
             return accessorPath.Equals(path);
         }
 
-        public static bool IsInsideAccessorType(this CSharpCodeCompletionContext context, string accessorType)
+        public static bool IsInsideAccessorType(this ISpecificCodeCompletionContext context, string accessorType)
         {
             var nodeAt = context.BasicContext.File.FindNodeAt(context.BasicContext.CaretDocumentRange);
 

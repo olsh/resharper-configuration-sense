@@ -6,7 +6,7 @@ namespace Resharper.ConfigurationSense.Extensions
 {
     public static class XmlFileExtensions
     {
-        public static IEnumerable<IXmlTag> FindAllByTagName(this IXmlFile xmlFile, string tagName)
+        public static IEnumerable<IXmlTag> FindAllByTagName(this IXmlTagContainer xmlFile, string tagName)
         {
             var xmlTags = new Queue<IXmlTag>(xmlFile.InnerTags);
             while (xmlTags.Count > 0)

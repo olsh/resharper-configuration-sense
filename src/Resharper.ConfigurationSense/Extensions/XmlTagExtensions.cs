@@ -10,7 +10,7 @@ namespace Resharper.ConfigurationSense.Extensions
     public static class XmlTagExtensions
     {
         public static IEnumerable<KeyValueSetting> GetChildSettings(
-            this IXmlTag xmlTag,
+            this IXmlTagContainer xmlTag,
             string keyAttribute,
             string valueAttribute)
         {

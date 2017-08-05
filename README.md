@@ -1,6 +1,7 @@
 # Configuration Sense for ReSharper
 
 [![Build status](https://ci.appveyor.com/api/projects/status/d2u5scm7t3d373qj?svg=true)](https://ci.appveyor.com/project/olsh/resharper-configuration-sense)
+[![Quality Gate](https://sonarqube.com/api/badges/gate?key=resharper-configuration-sense)](https://sonarqube.com/dashboard/index/resharper-configuration-sense)
 
 This extension provides autocomplete and validation for `App settings` and `Connection strings`.  
 

@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace Resharper.ConfigurationSense.Models
 {
-    public class KeyValueSetting : IEquatable<KeyValueSetting>
+    public sealed class KeyValueSetting : IEquatable<KeyValueSetting>
     {
         public KeyValueSetting([NotNull] string key, [NotNull] string value)
         {
