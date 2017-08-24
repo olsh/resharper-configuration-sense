@@ -1,5 +1,5 @@
 ﻿using JetBrains.Application.Settings;
-using JetBrains.Application.Settings.Store;
+using JetBrains.Application.Settings.WellKnownRootKeys;
 
 namespace Resharper.ConfigurationSense.Settings
 {

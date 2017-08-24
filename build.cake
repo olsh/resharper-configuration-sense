@@ -1,10 +1,7 @@
-#addin "Cake.ExtendedNuGet"
-#addin "nuget:?package=NuGet.Core&version=2.8.6"
-
 var target = Argument("target", "Default");
 var buildConfiguration = Argument("buildConfig", "Debug");
-var extensionsVersion = Argument("version", "2017.1.2");
-var waveVersion = Argument("wave", "[8.0]");
+var extensionsVersion = Argument("version", "2017.2.0");
+var waveVersion = Argument("wave", "[9.0]");
 
 var projectName = "Resharper.ConfigurationSense";
 var solutionFile = string.Format("./src/{0}.sln", projectName);
@@ -88,7 +85,8 @@ Task("NugetPack")
                                      NoPackageAnalysis       = true,
                                      Files                   = files,
                                      OutputDirectory         = ".",
-									 Dependencies            = new [] { new NuSpecDependency() { Id = "Wave", Version = waveVersion } }
+									 Dependencies            = new [] { new NuSpecDependency() { Id = "Wave", Version = waveVersion } },
+									 ReleaseNotes            = new [] { "https://github.com/olsh/resharper-configuration-sense/releases" }
                                  };
 
      NuGetPack(nuGetPackSettings);

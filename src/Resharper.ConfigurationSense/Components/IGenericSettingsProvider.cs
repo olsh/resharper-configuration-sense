@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-
-using JetBrains.ReSharper.Feature.Services.CSharp.CodeCompletion.Infrastructure;
-
+using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure;
 using Resharper.ConfigurationSense.Constants;
 using Resharper.ConfigurationSense.Models;
 
@@ -10,12 +8,12 @@ namespace Resharper.ConfigurationSense.Components
     public interface IGenericSettingsProvider
     {
         LinkedList<KeyValueSettingLookupItem> GetJsonSettingsLookupItems(
-            CSharpCodeCompletionContext context,
+            ISpecificCodeCompletionContext context,
             JsonSettingType settingType,
             string jsonPath = null);
 
         LinkedList<KeyValueSettingLookupItem> GetXmlSettingsLookupItems(
-            CSharpCodeCompletionContext context,
+            ISpecificCodeCompletionContext context,
             string settingsTagName,
             string settingsKeyAttribute,
             string settingsValueAttributes);

@@ -21,7 +21,7 @@ namespace Resharper.ConfigurationSense.SuggestionProviders
             _genericSettingsProvider = genericSettingsProvider;
         }
 
-        protected override bool AddLookupItems(CSharpCodeCompletionContext context, GroupedItemsCollector collector)
+        protected override bool AddLookupItems(CSharpCodeCompletionContext context, IItemsCollector collector)
         {
             var lookupItems = _genericSettingsProvider.GetXmlSettingsLookupItems(
                 context,

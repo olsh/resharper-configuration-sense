@@ -2,17 +2,16 @@
 
 using JetBrains.Annotations;
 using JetBrains.Application.Components;
+using JetBrains.Application.UI.Components;
+using JetBrains.Application.UI.Controls.StringCollectionEdit.Impl;
+using JetBrains.Application.UI.Options;
+using JetBrains.Application.UI.Options.OptionPages;
+using JetBrains.Application.UI.Options.OptionsDialog;
 using JetBrains.DataFlow;
 using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Feature.Services.Resources;
 using JetBrains.ReSharper.Feature.Services.Util.FilesAndDirs;
 using JetBrains.ReSharper.Resources.Shell;
-using JetBrains.UI.Application;
-using JetBrains.UI.Options;
-using JetBrains.UI.Options.OptionPages;
-using JetBrains.UI.Options.OptionsDialog2.SimpleOptions;
-using JetBrains.UI.Wpf.Controls.StringCollectionEdit.Impl;
-
 using Resharper.ConfigurationSense.Extensions;
 
 namespace Resharper.ConfigurationSense.Settings

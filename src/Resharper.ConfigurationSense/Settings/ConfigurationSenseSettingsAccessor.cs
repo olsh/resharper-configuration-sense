@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 
 using JetBrains.Annotations;
-using JetBrains.Application.Settings.Store;
+using JetBrains.Application.Settings;
 
 namespace Resharper.ConfigurationSense.Settings
 {

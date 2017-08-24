@@ -4,7 +4,6 @@ using JetBrains.Application;
 using JetBrains.DocumentModel;
 using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure;
-using JetBrains.ReSharper.Feature.Services.CSharp.CodeCompletion.Infrastructure;
 using JetBrains.ReSharper.Psi.Tree;
 using JetBrains.Util;
 
@@ -25,7 +24,7 @@ namespace Resharper.ConfigurationSense.Components
         }
 
         public LinkedList<KeyValueSettingLookupItem> GetJsonSettingsLookupItems(
-            CSharpCodeCompletionContext context,
+            ISpecificCodeCompletionContext context,
             JsonSettingType settingType,
             string jsonPath = null)
         {
@@ -44,7 +43,7 @@ namespace Resharper.ConfigurationSense.Components
         }
 
         public LinkedList<KeyValueSettingLookupItem> GetXmlSettingsLookupItems(
-            CSharpCodeCompletionContext context,
+            ISpecificCodeCompletionContext context,
             string settingsTagName,
             string settingsKeyAttribute,
             string settingsValueAttributes)
@@ -64,7 +63,7 @@ namespace Resharper.ConfigurationSense.Components
         }
 
         private LinkedList<KeyValueSettingLookupItem> CreateLookupItems(
-            CSharpCodeCompletionContext context,
+            ISpecificCodeCompletionContext context,
             IEnumerable<KeyValueSetting> settings,
             IProjectModelElement project,
             IRangeMarker rangeMarker,
@@ -85,7 +84,7 @@ namespace Resharper.ConfigurationSense.Components
         private IRangeMarker CreateRangeMarker(ISpecificCodeCompletionContext context)
         {
             var rangeMarker =
-                new TextRange(context.BasicContext.CaretDocumentRange.TextRange.StartOffset).CreateRangeMarker(
+                new TextRange(context.BasicContext.CaretDocumentOffset.Offset).CreateRangeMarker(
                     context.BasicContext.Document);
             return rangeMarker;
         }
