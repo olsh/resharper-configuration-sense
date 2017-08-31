@@ -58,9 +58,8 @@ namespace Resharper.ConfigurationSense.Extensions
                         }
                     }
 
-                    if ((property.Value.Type == JTokenType.Object && settingType == JsonSettingType.Object)
-                        || (property.Value.Type != JTokenType.Object && property.Value.Type != JTokenType.Array
-                             && settingType == JsonSettingType.Value))
+                    if ((property.Value.Type != JTokenType.Object && property.Value.Type != JTokenType.Array
+                             && settingType == JsonSettingType.Value) || settingType == JsonSettingType.All)
                     {
                         formattedPath = FormatJsonPath(property);
                     }

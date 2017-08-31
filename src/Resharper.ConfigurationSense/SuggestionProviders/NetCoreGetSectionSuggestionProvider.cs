@@ -24,7 +24,7 @@ namespace Resharper.ConfigurationSense.SuggestionProviders
 
         protected override bool AddLookupItems(CSharpCodeCompletionContext context, IItemsCollector collector)
         {
-            var lookupItems = _settingsProvider.GetJsonSettingsLookupItems(context, JsonSettingType.Object);
+            var lookupItems = _settingsProvider.GetJsonSettingsLookupItems(context, JsonSettingType.All);
 
             if (!lookupItems.Any())
             {

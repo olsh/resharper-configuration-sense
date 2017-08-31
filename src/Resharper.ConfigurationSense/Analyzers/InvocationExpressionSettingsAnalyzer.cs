@@ -61,7 +61,7 @@ namespace Resharper.ConfigurationSense.Analyzers
             }
             else if (methodPath == ClrTypeConstants.NetCoreGetSection)
             {
-                keyValueSettings = project.GetJsonProjectSettings(JsonSettingType.Object);
+                keyValueSettings = project.GetJsonProjectSettings(JsonSettingType.All);
                 type = "Section";
             }
             else if (methodPath == ClrTypeConstants.NetCoreGetValue)

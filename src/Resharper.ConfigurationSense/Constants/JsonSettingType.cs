@@ -4,6 +4,6 @@
     {
         Value,
 
-        Object
+        All
     }
 }
