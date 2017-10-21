@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <ReSharperVersionIdentifier>20172</ReSharperVersionIdentifier>
+    <ReSharperVersionIdentifier>Rider20172</ReSharperVersionIdentifier>
     <TargetFramework>net45</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <VersionPrefix>2017.2.2</VersionPrefix>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
@@ -16,7 +17,7 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.ReSharper.SDK" Version="2017.2.2" />
+    <PackageReference Include="JetBrains.Rider.SDK" Version="2017.2.20171011.224552" />
   </ItemGroup>
 
 </Project>

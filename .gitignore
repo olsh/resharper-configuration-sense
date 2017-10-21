@@ -251,3 +251,7 @@ paket-files/
 # Cake
 tools/*
 !tools/packages.config
+
+# Temp files
+*.zip
+/temp

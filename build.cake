@@ -1,10 +1,21 @@
 var target = Argument("target", "Default");
 var buildConfiguration = Argument("buildConfig", "Debug");
-var extensionsVersion = Argument("version", "2017.2.1");
-var waveVersion = Argument("wave", "[9.0]");
+var waveVersion = Argument("wave", "[9.0,10.0)");
+var host = Argument("Host", "Resharper");
 
-var projectName = "Resharper.ConfigurationSense";
-var solutionFile = string.Format("./src/{0}.sln", projectName);
+var solutionName = "Resharper.ConfigurationSense";
+var projectName = solutionName;
+var riderHost = "Rider";
+if (host == riderHost)
+{
+	projectName = solutionName + ".Rider";
+}
+
+var solutionFile = string.Format("./src/{0}.sln", solutionName);
+var solutionFolder = string.Format("./src/{0}/", solutionName);
+var projectFile = string.Format("{0}{1}.csproj", solutionFolder, projectName);
+
+var extensionsVersion = XmlPeek(projectFile, "Project/PropertyGroup[1]/VersionPrefix/text()");
 
 Task("AppendBuildNumber")
   .WithCriteria(BuildSystem.AppVeyor.IsRunningOnAppVeyor)
@@ -25,29 +36,15 @@ Task("UpdateBuildVersion")
 Task("NugetRestore")
   .Does(() =>
 {
+
 	NuGetRestore(solutionFile);
-});
-
-Task("UpdateAssemblyVersion")
-  .IsDependentOn("AppendBuildNumber")
-  .Does(() =>
-{
-	var assemblyFile = string.Format("src/{0}/Properties/AssemblyInfo.cs", projectName);
-
-	AssemblyInfoSettings assemblySettings = new AssemblyInfoSettings();
-	assemblySettings.Title = "Resharper.ConfigurationSense";
-	assemblySettings.FileVersion = extensionsVersion;
-	assemblySettings.Version = extensionsVersion;
-
-	CreateAssemblyInfo(assemblyFile, assemblySettings);
 });
 
 Task("Build")
   .IsDependentOn("NugetRestore")
-  .IsDependentOn("UpdateAssemblyVersion")
   .Does(() =>
 {
-	MSBuild(solutionFile, new MSBuildSettings {
+	MSBuild(projectFile, new MSBuildSettings {
 		Verbosity = Verbosity.Minimal,
 		Configuration = buildConfiguration
     });
@@ -59,7 +56,7 @@ Task("NugetPack")
   .IsDependentOn("Build")
   .Does(() =>
 {
-	 var buildPath = string.Format("./src/{0}/bin/{1}", projectName, buildConfiguration);
+	 var buildPath = string.Format("./src/{0}/bin/{1}", solutionName, buildConfiguration);
 
 	 var files = new List<NuSpecContent>();
      files.Add(new NuSpecContent {Source = string.Format("{0}/{1}.dll", buildPath, projectName), Target = "dotFiles"});
@@ -90,6 +87,25 @@ Task("NugetPack")
                                  };
 
      NuGetPack(nuGetPackSettings);
+
+	 if (host == riderHost)
+	 {
+	     var tempDirectory = "./temp/";
+	     if (DirectoryExists(tempDirectory))
+		 {
+	         DeleteDirectory(tempDirectory, true);
+		 }
+
+	     var riderMetaFolderName = "rider-configuration-sense";
+		 var riderMetaFolderPath = string.Format("{0}{1}/", tempDirectory, riderMetaFolderName);
+         CopyDirectory(string.Format("./src/{0}/", riderMetaFolderName), riderMetaFolderPath);
+		 var nugetPackage = string.Format("{0}.{1}.nupkg", projectName, extensionsVersion);
+		 CopyFile(nugetPackage, string.Format("{0}{1}", riderMetaFolderPath, nugetPackage));
+
+		 XmlPoke(string.Format("{0}META-INF/plugin.xml", riderMetaFolderPath), "idea-plugin/version", extensionsVersion);
+
+		 Zip(tempDirectory, string.Format("./{0}.zip", riderMetaFolderName));
+	 }
 });
 
 Task("CreateArtifact")
@@ -98,7 +114,13 @@ Task("CreateArtifact")
   .WithCriteria(BuildSystem.AppVeyor.IsRunningOnAppVeyor)
   .Does(() =>
 {
-	BuildSystem.AppVeyor.UploadArtifact(string.Format("{0}.{1}.nupkg", projectName, extensionsVersion));
+	var artifactFile = string.Format("{0}.{1}.nupkg", projectName, extensionsVersion);
+	if (host == riderHost)
+	{
+		artifactFile = string.Format("rider-configuration-sense.zip");
+	}
+
+	BuildSystem.AppVeyor.UploadArtifact(artifactFile);
 });
 
 Task("Default")
