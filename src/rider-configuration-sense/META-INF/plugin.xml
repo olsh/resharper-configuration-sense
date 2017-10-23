@@ -2,7 +2,7 @@
   <id>com.intellij.resharper.ConfigurationSense</id>
   <name>Configuration Sense</name>
   <description>This extension provides autocomplete and validation for App settings and Connection strings.</description>
-  <version>1.2.4.0</version>
+  <version>2017.2.2.0</version>
   <vendor url="https://github.com/olsh/resharper-configuration-sense">Oleg Shevchenko</vendor>
   <idea-version since-build="172.4144" until-build="172-4144.*"/>
   <extensions defaultExtensionNs="com.intellij" />

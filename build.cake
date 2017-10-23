@@ -33,19 +33,10 @@ Task("UpdateBuildVersion")
 	BuildSystem.AppVeyor.UpdateBuildVersion(extensionsVersion);
 });
 
-Task("NugetRestore")
-  .Does(() =>
-{
-
-	NuGetRestore(solutionFile);
-});
-
 Task("Build")
-  .IsDependentOn("NugetRestore")
   .Does(() =>
 {
-	MSBuild(projectFile, new MSBuildSettings {
-		Verbosity = Verbosity.Minimal,
+	DotNetCoreBuild(projectFile, new DotNetCoreBuildSettings {
 		Configuration = buildConfiguration
     });
 });
@@ -93,7 +84,7 @@ Task("NugetPack")
 	     var tempDirectory = "./temp/";
 	     if (DirectoryExists(tempDirectory))
 		 {
-	         DeleteDirectory(tempDirectory, true);
+	         DeleteDirectory(tempDirectory, new DeleteDirectorySettings { Force = true, Recursive = true });
 		 }
 
 	     var riderMetaFolderName = "rider-configuration-sense";
@@ -102,7 +93,9 @@ Task("NugetPack")
 		 var nugetPackage = string.Format("{0}.{1}.nupkg", projectName, extensionsVersion);
 		 CopyFile(nugetPackage, string.Format("{0}{1}", riderMetaFolderPath, nugetPackage));
 
-		 XmlPoke(string.Format("{0}META-INF/plugin.xml", riderMetaFolderPath), "idea-plugin/version", extensionsVersion);
+		 // TODO: Automatically set the version when the issue will be resolved
+		 // https://github.com/cake-build/cake/issues/1889
+		 // XmlPoke(string.Format("{0}META-INF/plugin.xml", riderMetaFolderPath), "idea-plugin/version", extensionsVersion, new XmlPokeSettings { Encoding = new UTF8Encoding(false) });
 
 		 Zip(tempDirectory, string.Format("./{0}.zip", riderMetaFolderName));
 	 }
