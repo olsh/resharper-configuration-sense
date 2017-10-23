@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <ReSharperVersionIdentifier>Rider20172</ReSharperVersionIdentifier>
-    <TargetFramework>net45</TargetFramework>
+    <TargetFramework>net451</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <VersionPrefix>2017.2.2</VersionPrefix>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

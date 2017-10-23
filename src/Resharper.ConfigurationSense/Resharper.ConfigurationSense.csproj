@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <ReSharperVersionIdentifier>20172</ReSharperVersionIdentifier>
-    <TargetFramework>net45</TargetFramework>
+    <TargetFramework>net451</TargetFramework>
     <VersionPrefix>2017.2.2</VersionPrefix>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
