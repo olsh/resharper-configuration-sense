@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{853DF449-B620-4D89-B27C-C33FE6831318}"
 	ProjectSection(SolutionItems) = preProject
 		..\build.cake = ..\build.cake
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resharper.ConfigurationSense.Rider", "Resharper.ConfigurationSense\Resharper.ConfigurationSense.Rider.csproj", "{6BC20C1B-F2F5-450A-878F-7F75EBF08491}"

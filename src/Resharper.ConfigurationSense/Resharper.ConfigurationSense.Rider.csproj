@@ -19,6 +19,7 @@
   <PropertyGroup>
     <!-- Exclude the project from analysis to prvent duplications -->
     <SonarQubeExclude>true</SonarQubeExclude>
+    <RootNamespace>Resharper.ConfigurationSense</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Rider.SDK" Version="2017.2.20171011.224552" />
