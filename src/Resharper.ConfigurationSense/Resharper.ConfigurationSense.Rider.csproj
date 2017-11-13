@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <ReSharperVersionIdentifier>Rider20172</ReSharperVersionIdentifier>
     <TargetFramework>net451</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <VersionPrefix>2017.2.2</VersionPrefix>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
