@@ -20,6 +20,6 @@
     <RootNamespace>Resharper.ConfigurationSense</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Rider.SDK" Version="2017.2.20171011.224552" />
+    <PackageReference Include="JetBrains.Rider.SDK" Version="2017.2.20171114" />
   </ItemGroup>
 </Project>
