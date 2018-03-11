@@ -1,7 +1,7 @@
 # Configuration Sense for ReSharper and Rider IDE
 
 [![Build status](https://ci.appveyor.com/api/projects/status/d2u5scm7t3d373qj?svg=true)](https://ci.appveyor.com/project/olsh/resharper-configuration-sense)
-[![Quality Gate](https://sonarqube.com/api/badges/gate?key=resharper-configuration-sense)](https://sonarqube.com/dashboard/index/resharper-configuration-sense)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=resharper-configuration-sense&metric=alert_status)](https://sonarcloud.io/dashboard?id=resharper-configuration-sense)
 
 This extension provides autocomplete and validation for `App settings` and `Connection strings`.  
 

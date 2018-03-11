@@ -93,9 +93,7 @@ Task("NugetPack")
 		 var nugetPackage = string.Format("{0}.{1}.nupkg", projectName, extensionsVersion);
 		 CopyFile(nugetPackage, string.Format("{0}{1}", riderMetaFolderPath, nugetPackage));
 
-		 // TODO: Automatically set the version when the issue will be resolved
-		 // https://github.com/cake-build/cake/issues/1889
-		 // XmlPoke(string.Format("{0}META-INF/plugin.xml", riderMetaFolderPath), "idea-plugin/version", extensionsVersion, new XmlPokeSettings { Encoding = new UTF8Encoding(false) });
+		 XmlPoke(string.Format("{0}META-INF/plugin.xml", riderMetaFolderPath), "idea-plugin/version", extensionsVersion, new XmlPokeSettings { Encoding = new UTF8Encoding(false) });
 
 		 Zip(tempDirectory, string.Format("./{0}.zip", riderMetaFolderName));
 	 }
