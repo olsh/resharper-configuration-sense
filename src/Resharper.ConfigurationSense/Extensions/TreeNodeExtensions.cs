@@ -5,8 +5,7 @@ using JetBrains.Annotations;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.CSharp.Tree;
 using JetBrains.ReSharper.Psi.Tree;
-
-using NuGet;
+using JetBrains.Util;
 
 namespace Resharper.ConfigurationSense.Extensions
 {
@@ -15,8 +14,7 @@ namespace Resharper.ConfigurationSense.Extensions
         [CanBeNull]
         public static string GetAccessorPath(this ITreeNode treeNode)
         {
-            IReferenceExpression referenceExpression;
-            if (TryFindReferenceExpression<IElementAccessExpression>(treeNode, out referenceExpression))
+            if (TryFindReferenceExpression<IElementAccessExpression>(treeNode, out var referenceExpression))
             {
                 return null;
             }
@@ -26,8 +24,7 @@ namespace Resharper.ConfigurationSense.Extensions
 
         public static IEnumerable<IDeclaredType> GetAccessorSuperTypes(this ITreeNode treeNode)
         {
-            IReferenceExpression referenceExpression;
-            if (TryFindReferenceExpression<IElementAccessExpression>(treeNode, out referenceExpression))
+            if (TryFindReferenceExpression<IElementAccessExpression>(treeNode, out var referenceExpression))
             {
                 return Enumerable.Empty<IDeclaredType>();
             }
@@ -48,8 +45,7 @@ namespace Resharper.ConfigurationSense.Extensions
         [CanBeNull]
         public static string GetMethodPath(this ITreeNode treeNode)
         {
-            IReferenceExpression referenceExpression;
-            if (TryFindReferenceExpression<IInvocationExpression>(treeNode, out referenceExpression))
+            if (TryFindReferenceExpression<IInvocationExpression>(treeNode, out var referenceExpression))
             {
                 return null;
             }

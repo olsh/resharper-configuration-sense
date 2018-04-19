@@ -1,6 +1,6 @@
 var target = Argument("target", "Default");
 var buildConfiguration = Argument("buildConfig", "Debug");
-var waveVersion = Argument("wave", "[11.0,12.0)");
+var waveVersion = Argument("wave", "[12.0,13.0)");
 var host = Argument("Host", "Resharper");
 
 var solutionName = "Resharper.ConfigurationSense";
