@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ReSharperVersionIdentifier>Rider20172</ReSharperVersionIdentifier>
-    <TargetFramework>net451</TargetFramework>
-    <VersionPrefix>2018.1.2</VersionPrefix>
+    <TargetFramework>net461</TargetFramework>
+    <VersionPrefix>2018.2.0</VersionPrefix>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -20,6 +20,6 @@
     <RootNamespace>Resharper.ConfigurationSense</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Rider.SDK" Version="2018.1.2" />
+    <PackageReference Include="JetBrains.Rider.SDK" Version="2018.2.0" />
   </ItemGroup>
 </Project>
