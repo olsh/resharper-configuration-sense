@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using JetBrains.Annotations;
 using JetBrains.ProjectModel;
@@ -26,7 +27,7 @@ namespace Resharper.ConfigurationSense.Extensions
         {
             var configFiles = GetNetCoreJsonConfigFiles(project);
 
-            var settings = new HashSet<KeyValueSetting>(KeyValueSetting.KeyComparer);
+            var settings = new Dictionary<string, IList<string>>();
             foreach (var projectFile in configFiles)
             {
                 var json = ParseJsonProjectFile(projectFile);
@@ -81,11 +82,16 @@ namespace Resharper.ConfigurationSense.Extensions
                         }
                     }
 
-                    settings.Add(new KeyValueSetting(formattedPath, property.Value.ToString()));
+                    if (!settings.ContainsKey(formattedPath))
+                    {
+                        settings.Add(formattedPath, new List<string>());
+                    }
+
+                    settings[formattedPath].Add(property.Value.ToString());
                 }
             }
 
-            return settings;
+            return settings.Select(x => new KeyValueSetting(x.Key, string.Join(", ", x.Value)));
         }
 
         public static IEnumerable<KeyValueSetting> GetXmlProjectSettings(
@@ -167,6 +173,7 @@ namespace Resharper.ConfigurationSense.Extensions
             return project.GetAllProjectFiles(
                 file => file.LanguageType.Is<JsonProjectFileType>()
                         && (file.Name.Equals(FileNames.NetCoreAppSettingsJson, StringComparison.OrdinalIgnoreCase)
+                            || Regex.IsMatch(file.Name, FileNames.NetCoreAppSettingsEnvironmentJsonRegex, RegexOptions.IgnoreCase)
                             || additionalConfigurationFiles.Contains(file.GetPersistentID())));
         }
 

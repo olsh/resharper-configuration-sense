@@ -6,6 +6,9 @@
 
         public const string NetCoreAppSettingsJson = "appsettings.json";
 
+        /*language=regexp*/
+        public const string NetCoreAppSettingsEnvironmentJsonRegex = @"^appsettings\..+\.json$";
+
         public const string NetCoreProjectJson = "project.json";
 
         public const string UserSecretsPathFormat = @"{0}\microsoft\UserSecrets\{1}\secrets.json";

@@ -47,7 +47,7 @@ namespace Resharper.ConfigurationSense.Settings
             var customConfigurationFiles = new StringCollectionEditViewModel(
                 lifetime,
                 @"Additional configuration files. 
-You don't need to add appsettings.json, web.config and app.config to the list, they're scanned by default. 
+You don't need to add appsettings.json, appsettings.ENVIRONMENT.json, web.config and app.config to the list, they're scanned by default.
 Only *.json and *.xml files are supported.",
                 buttonProviderFactory,
                 editItemViewModelFactory);
