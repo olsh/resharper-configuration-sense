@@ -27,7 +27,7 @@ namespace Resharper.ConfigurationSense.Extensions
         {
             var configFiles = GetNetCoreJsonConfigFiles(project);
 
-            var settings = new Dictionary<string, IList<string>>();
+            var settings = new Dictionary<string, LinkedList<string>>();
             foreach (var projectFile in configFiles)
             {
                 var json = ParseJsonProjectFile(projectFile);
