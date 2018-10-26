@@ -82,12 +82,13 @@ namespace Resharper.ConfigurationSense.Extensions
                         }
                     }
 
-                    if (!settings.ContainsKey(formattedPath))
+                    if (!settings.TryGetValue(formattedPath, out var settingValues))
                     {
-                        settings.Add(formattedPath, new List<string>());
+                        settingValues = new LinkedList<string>();
+                        settings.Add(formattedPath, settingValues);
                     }
 
-                    settings[formattedPath].Add(property.Value.ToString());
+                    settingValues.AddLast(property.Value.ToString());
                 }
             }
 
