@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 using JetBrains.Annotations;
 using JetBrains.ProjectModel;
@@ -27,7 +26,7 @@ namespace Resharper.ConfigurationSense.Extensions
         {
             var configFiles = GetNetCoreJsonConfigFiles(project);
 
-            var settings = new Dictionary<string, LinkedList<string>>();
+            var settings = new Dictionary<string, HashSet<string>>();
             foreach (var projectFile in configFiles)
             {
                 var json = ParseJsonProjectFile(projectFile);
@@ -84,11 +83,11 @@ namespace Resharper.ConfigurationSense.Extensions
 
                     if (!settings.TryGetValue(formattedPath, out var settingValues))
                     {
-                        settingValues = new LinkedList<string>();
+                        settingValues = new HashSet<string>();
                         settings.Add(formattedPath, settingValues);
                     }
 
-                    settingValues.AddLast(property.Value.ToString());
+                    settingValues.Add(property.Value.ToString());
                 }
             }
 
@@ -160,22 +159,31 @@ namespace Resharper.ConfigurationSense.Extensions
         {
             var additionalConfigurationFiles = project.GetSolution().GetAdditionalConfigurationFiles();
 
-            return project.GetAllProjectFiles(
-                file => file.LanguageType.Is<XmlProjectFileType>()
-                        && (file.Name.Equals(FileNames.WebConfig, StringComparison.OrdinalIgnoreCase)
-                            || file.Name.Equals(FileNames.AppConfig, StringComparison.OrdinalIgnoreCase)
-                            || additionalConfigurationFiles.Contains(file.GetPersistentID())));
+            var xmlConfigFiles = new HashSet<IProjectFile>(
+                project.GetAllProjectFiles(
+                    file => file.LanguageType.Is<XmlProjectFileType>()
+                            && (file.Name.Equals(FileNames.WebConfig, StringComparison.OrdinalIgnoreCase)
+                                || file.Name.Equals(FileNames.AppConfig, StringComparison.OrdinalIgnoreCase)
+                                || additionalConfigurationFiles.Contains(file.GetPersistentID()))));
+
+            UnionWithDependentFiles(xmlConfigFiles);
+
+            return xmlConfigFiles;
         }
 
         private static IEnumerable<IProjectFile> GetNetCoreJsonConfigFiles(IProjectFolder project)
         {
             var additionalConfigurationFiles = project.GetSolution().GetAdditionalConfigurationFiles();
 
-            return project.GetAllProjectFiles(
-                file => file.LanguageType.Is<JsonProjectFileType>()
-                        && (file.Name.Equals(FileNames.NetCoreAppSettingsJson, StringComparison.OrdinalIgnoreCase)
-                            || Regex.IsMatch(file.Name, FileNames.NetCoreAppSettingsEnvironmentJsonRegex, RegexOptions.IgnoreCase)
-                            || additionalConfigurationFiles.Contains(file.GetPersistentID())));
+            var netCoreJsonConfigFiles = new HashSet<IProjectFile>(
+                project.GetAllProjectFiles(
+                    file => file.LanguageType.Is<JsonProjectFileType>()
+                            && (file.Name.Equals(FileNames.NetCoreAppSettingsJson, StringComparison.OrdinalIgnoreCase)
+                                || additionalConfigurationFiles.Contains(file.GetPersistentID()))));
+
+            UnionWithDependentFiles(netCoreJsonConfigFiles);
+
+            return netCoreJsonConfigFiles;
         }
 
         private static JObject ParseJsonProjectFile(IProjectFile projectFile)
@@ -242,6 +250,11 @@ namespace Resharper.ConfigurationSense.Extensions
             }
 
             return null;
+        }
+
+        private static void UnionWithDependentFiles(HashSet<IProjectFile> projectFiles)
+        {
+            projectFiles.UnionWith(projectFiles.SelectMany(p => p.GetDependentFiles()).ToArray());
         }
     }
 }
