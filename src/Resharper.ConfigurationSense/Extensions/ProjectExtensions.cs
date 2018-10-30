@@ -100,7 +100,7 @@ namespace Resharper.ConfigurationSense.Extensions
             string settingsKeyAttribute,
             string settingsValueAttributes)
         {
-            var result = new HashSet<KeyValueSetting>(KeyValueSetting.KeyComparer);
+            var result = new Dictionary<string, HashSet<string>>();
 
             var configFiles = GetXmlConfigFiles(project);
 
@@ -130,11 +130,20 @@ namespace Resharper.ConfigurationSense.Extensions
                     }
 
                     var settings = settingTag.GetChildSettings(settingsKeyAttribute, settingsValueAttributes);
-                    NuGet.CollectionExtensions.AddRange(result, settings);
+                    foreach (var setting in settings)
+                    {
+                        if (!result.TryGetValue(setting.Key, out var settingValues))
+                        {
+                            settingValues = new HashSet<string>();
+                            result.Add(setting.Key, settingValues);
+                        }
+
+                        settingValues.Add(setting.Value);
+                    }
                 }
             }
 
-            return result;
+            return result.Select(x => new KeyValueSetting(x.Key, string.Join(", ", x.Value)));
         }
 
         private static string FormatJsonPath(JToken property)
