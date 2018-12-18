@@ -254,3 +254,6 @@ tools/*
 # Temp files
 *.zip
 /temp
+
+# SonarQube
+.sonarqube

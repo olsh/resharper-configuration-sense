@@ -1,22 +1,14 @@
 version: 1.0.{build}
 image: Visual Studio 2017
-environment:
-  SONAR_TOKEN:
-    secure: hoomSHcpB7NvX3rhPvJ50WYblwXceJIX1rwKesw3MCYyXJRz9Hu7MNdM3xIczS2G
 install:
   - dotnet tool install -g Cake.Tool --version 0.31.0 
-  - cinst msbuild-sonarqube-runner
 build_script:
 - cmd: >-
     dotnet cake -Target=CreateArtifact -buildConfig=Release
 
     dotnet cake --Host="Rider" -Target=CreateArtifact -buildConfig=Release
 
-    SonarQube.Scanner.MSBuild.exe begin /k:"resharper-configuration-sense" /d:"sonar.organization=olsh-github" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.login=$env:SONAR_TOKEN" /v:"$env:APPVEYOR_BUILD_VERSION" /n:"Configuration Sense"
-
-    MsBuild.exe /t:Rebuild /v:q src\Resharper.ConfigurationSense.sln
-
-    SonarQube.Scanner.MSBuild.exe end /d:"sonar.login=$env:SONAR_TOKEN"
+    dotnet cake -Target=Sonar -buildConfig=Release
 test: off
 cache:
   - '%USERPROFILE%\.sonar\cache'

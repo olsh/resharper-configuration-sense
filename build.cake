@@ -1,3 +1,7 @@
+#tool nuget:?package=MSBuild.SonarQube.Runner.Tool&version=4.3.1
+
+#addin nuget:?package=Cake.Sonar&version=1.1.18
+
 var target = Argument("target", "Default");
 var buildConfiguration = Argument("buildConfig", "Debug");
 var waveVersion = Argument("wave", "[183.0,184.0)");
@@ -8,7 +12,7 @@ var projectName = solutionName;
 var riderHost = "Rider";
 if (host == riderHost)
 {
-	projectName = solutionName + ".Rider";
+    projectName = solutionName + ".Rider";
 }
 
 var solutionFile = string.Format("./src/{0}.sln", solutionName);
@@ -21,8 +25,8 @@ Task("AppendBuildNumber")
   .WithCriteria(BuildSystem.AppVeyor.IsRunningOnAppVeyor)
   .Does(() =>
 {
-	var buildNumber = BuildSystem.AppVeyor.Environment.Build.Number;
-	extensionsVersion = string.Format("{0}.{1}", extensionsVersion, buildNumber);
+    var buildNumber = BuildSystem.AppVeyor.Environment.Build.Number;
+    extensionsVersion = string.Format("{0}.{1}", extensionsVersion, buildNumber);
 });
 
 Task("UpdateBuildVersion")
@@ -30,31 +34,38 @@ Task("UpdateBuildVersion")
   .WithCriteria(BuildSystem.AppVeyor.IsRunningOnAppVeyor)
   .Does(() =>
 {
-	BuildSystem.AppVeyor.UpdateBuildVersion(extensionsVersion);
+    BuildSystem.AppVeyor.UpdateBuildVersion(extensionsVersion);
 });
 
 Task("Build")
   .Does(() =>
 {
-	DotNetCoreBuild(projectFile, new DotNetCoreBuildSettings {
-		Configuration = buildConfiguration
+    DotNetCoreBuild(projectFile, new DotNetCoreBuildSettings {
+        Configuration = buildConfiguration
     });
 });
 
+Task("BuildSolution")
+  .Does(() =>
+{
+    DotNetCoreBuild(solutionFile, new DotNetCoreBuildSettings {
+        Configuration = buildConfiguration
+    });
+});
 
 Task("NugetPack")
   .IsDependentOn("AppendBuildNumber")
   .IsDependentOn("Build")
   .Does(() =>
 {
-	 var buildPath = string.Format("./src/{0}/bin/{1}", solutionName, buildConfiguration);
+     var buildPath = string.Format("./src/{0}/bin/{1}", solutionName, buildConfiguration);
 
-	 var files = new List<NuSpecContent>();
+     var files = new List<NuSpecContent>();
      files.Add(new NuSpecContent {Source = string.Format("{0}/{1}.dll", buildPath, projectName), Target = "dotFiles"});
 
      if (buildConfiguration == "Debug") 
      {
-		files.Add(new NuSpecContent {Source = string.Format("{0}/{1}.pdb", buildPath, projectName), Target = "dotFiles"});
+        files.Add(new NuSpecContent {Source = string.Format("{0}/{1}.pdb", buildPath, projectName), Target = "dotFiles"});
      }
 
      var nuGetPackSettings   = new NuGetPackSettings {
@@ -73,30 +84,30 @@ Task("NugetPack")
                                      NoPackageAnalysis       = true,
                                      Files                   = files,
                                      OutputDirectory         = ".",
-									 Dependencies            = new [] { new NuSpecDependency() { Id = "Wave", Version = waveVersion } },
-									 ReleaseNotes            = new [] { "https://github.com/olsh/resharper-configuration-sense/releases" }
+                                     Dependencies            = new [] { new NuSpecDependency() { Id = "Wave", Version = waveVersion } },
+                                     ReleaseNotes            = new [] { "https://github.com/olsh/resharper-configuration-sense/releases" }
                                  };
 
      NuGetPack(nuGetPackSettings);
 
-	 if (host == riderHost)
-	 {
-	     var tempDirectory = "./temp/";
-	     if (DirectoryExists(tempDirectory))
-		 {
-	         DeleteDirectory(tempDirectory, new DeleteDirectorySettings { Force = true, Recursive = true });
-		 }
+     if (host == riderHost)
+     {
+         var tempDirectory = "./temp/";
+         if (DirectoryExists(tempDirectory))
+         {
+             DeleteDirectory(tempDirectory, new DeleteDirectorySettings { Force = true, Recursive = true });
+         }
 
-	     var riderMetaFolderName = "rider-configuration-sense";
-		 var riderMetaFolderPath = string.Format("{0}{1}/", tempDirectory, riderMetaFolderName);
+         var riderMetaFolderName = "rider-configuration-sense";
+         var riderMetaFolderPath = string.Format("{0}{1}/", tempDirectory, riderMetaFolderName);
          CopyDirectory(string.Format("./src/{0}/", riderMetaFolderName), riderMetaFolderPath);
-		 var nugetPackage = string.Format("{0}.{1}.nupkg", projectName, extensionsVersion);
-		 CopyFile(nugetPackage, string.Format("{0}{1}", riderMetaFolderPath, nugetPackage));
+         var nugetPackage = string.Format("{0}.{1}.nupkg", projectName, extensionsVersion);
+         CopyFile(nugetPackage, string.Format("{0}{1}", riderMetaFolderPath, nugetPackage));
 
-		 XmlPoke(string.Format("{0}META-INF/plugin.xml", riderMetaFolderPath), "idea-plugin/version", extensionsVersion, new XmlPokeSettings { Encoding = new UTF8Encoding(false) });
+         XmlPoke(string.Format("{0}META-INF/plugin.xml", riderMetaFolderPath), "idea-plugin/version", extensionsVersion, new XmlPokeSettings { Encoding = new UTF8Encoding(false) });
 
-		 Zip(tempDirectory, string.Format("./{0}.zip", riderMetaFolderName));
-	 }
+         Zip(tempDirectory, string.Format("./{0}.zip", riderMetaFolderName));
+     }
 });
 
 Task("CreateArtifact")
@@ -105,16 +116,41 @@ Task("CreateArtifact")
   .WithCriteria(BuildSystem.AppVeyor.IsRunningOnAppVeyor)
   .Does(() =>
 {
-	var artifactFile = string.Format("{0}.{1}.nupkg", projectName, extensionsVersion);
-	if (host == riderHost)
-	{
-		artifactFile = string.Format("rider-configuration-sense.zip");
-	}
+    var artifactFile = string.Format("{0}.{1}.nupkg", projectName, extensionsVersion);
+    if (host == riderHost)
+    {
+        artifactFile = string.Format("rider-configuration-sense.zip");
+    }
 
-	BuildSystem.AppVeyor.UploadArtifact(artifactFile);
+    BuildSystem.AppVeyor.UploadArtifact(artifactFile);
 });
 
+Task("SonarBegin")
+  .Does(() => {
+     SonarBegin(new SonarBeginSettings {
+        Url = "https://sonarcloud.io",
+        Login = EnvironmentVariable("sonar:apikey"),
+        Key = "resharper-configuration-sense",
+        Name = "Configuration Sense",
+        ArgumentCustomization = args => args
+            .Append($"/o:olsh-github"),
+        Version = "1.0.0.0"
+     });
+  });
+
+Task("SonarEnd")
+  .Does(() => {
+     SonarEnd(new SonarEndSettings {
+        Login = EnvironmentVariable("sonar:apikey")
+     });
+  });
+
+Task("Sonar")
+  .IsDependentOn("SonarBegin")
+  .IsDependentOn("BuildSolution")
+  .IsDependentOn("SonarEnd");
+
 Task("Default")
-	.IsDependentOn("NugetPack");
+    .IsDependentOn("NugetPack");
 
 RunTarget(target);
