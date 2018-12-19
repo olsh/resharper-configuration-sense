@@ -4,7 +4,7 @@
   <description>This extension provides autocomplete and validation for App settings and Connection strings.</description>
   <version>2017.2.2.0</version>
   <vendor url="https://github.com/olsh/resharper-configuration-sense">Oleg Shevchenko</vendor>
-  <idea-version since-build="182" until-build="182.*"/>
+  <idea-version since-build="183" until-build="183.*"/>
   <extensions defaultExtensionNs="com.intellij" />
   <depends>com.intellij.modules.rider</depends>
 </idea-plugin>
