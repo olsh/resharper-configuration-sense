@@ -10,7 +10,7 @@ This extension provides autocomplete and validation for `App settings` and `Conn
 ## Installation ReSharper
 
 Look for `Configuration Sense` in `ReSharper -> Extension manager`.  
-[ReSharper Gallery](https://resharper-plugins.jetbrains.com/packages/Resharper.ConfigurationSense/)
+[JetBrains Plugins Repository](https://plugins.jetbrains.com/plugin/11662-configuration-sense/)
 
 ## Installation Rider
 
