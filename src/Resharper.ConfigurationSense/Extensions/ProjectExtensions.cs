@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 
 using JetBrains.Annotations;
+using JetBrains.DocumentManagers;
 using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.Util;
@@ -198,7 +199,21 @@ namespace Resharper.ConfigurationSense.Extensions
         private static JObject ParseJsonProjectFile(IProjectFile projectFile)
         {
             var primaryPsiFile = projectFile.GetPrimaryPsiFile();
-            var text = primaryPsiFile.GetUnquotedText();
+
+            string text;
+
+            // Starting from 2019.1 JSON (and also js/ts/css) files are only processed by WebStorm (frontend) engine in Rider,
+            // so there is no PSI for them in Rider backend for performance reasons.
+            if (primaryPsiFile == null)
+            {
+                var component = projectFile.GetSolution().GetPsiServices().GetComponent<DocumentsOnProjectFiles>();
+                text = component.GetOrCreateDocument(projectFile).GetText();
+            }
+            else
+            {
+                text = primaryPsiFile.GetUnquotedText();
+            }
+
             return JObject.Parse(text);
         }
 

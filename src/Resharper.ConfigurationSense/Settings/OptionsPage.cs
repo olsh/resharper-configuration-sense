@@ -22,7 +22,7 @@ namespace Resharper.ConfigurationSense.Settings
         private const string PageId = "Configuration Sense";
 
         public ConfigurationSenseOptionsPage(
-            [NotNull] Lifetime lifetime,
+            Lifetime lifetime,
             [NotNull] OptionsSettingsSmartContext optionsSettingsSmartContext,
             IComponentContainer componentContainer,
             ProjectModelElementPresentationService presentationService,
