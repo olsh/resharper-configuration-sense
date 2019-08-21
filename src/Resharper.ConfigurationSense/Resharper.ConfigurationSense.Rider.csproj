@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
-    <VersionPrefix>2019.1.1</VersionPrefix>
+    <VersionPrefix>2019.2.1</VersionPrefix>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -20,6 +20,6 @@
     <RootNamespace>Resharper.ConfigurationSense</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Rider.SDK" Version="2019.1.1" />
+    <PackageReference Include="JetBrains.Rider.SDK" Version="2019.2.1" />
   </ItemGroup>
 </Project>
