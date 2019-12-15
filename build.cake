@@ -1,10 +1,10 @@
 #tool nuget:?package=MSBuild.SonarQube.Runner.Tool&version=4.6.0
 
-#addin nuget:?package=Cake.Sonar&version=1.1.18
+#addin nuget:?package=Cake.Sonar&version=1.1.22
 
 var target = Argument("target", "Default");
 var buildConfiguration = Argument("buildConfig", "Debug");
-var waveVersion = Argument("wave", "[192.0,193.0)");
+var waveVersion = Argument("wave", "[193.0,194.0)");
 var host = Argument("Host", "Resharper");
 
 var solutionName = "Resharper.ConfigurationSense";
