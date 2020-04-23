@@ -1,10 +1,12 @@
-#tool nuget:?package=MSBuild.SonarQube.Runner.Tool&version=4.6.0
+#tool nuget:?package=MSBuild.SonarQube.Runner.Tool&version=4.8.0
 
-#addin nuget:?package=Cake.Sonar&version=1.1.22
+#addin nuget:?package=Cake.Sonar&version=1.1.25
 
 var target = Argument("target", "Default");
 var buildConfiguration = Argument("buildConfig", "Debug");
-var waveVersion = Argument("wave", "[193.0,194.0)");
+
+var waveVersion = Argument("wave", "201");
+var waveNugetVersion = $"[{waveVersion}.0]";
 var host = Argument("Host", "Resharper");
 
 var solutionName = "Resharper.ConfigurationSense";
@@ -84,7 +86,7 @@ Task("NugetPack")
                                      NoPackageAnalysis       = true,
                                      Files                   = files,
                                      OutputDirectory         = ".",
-                                     Dependencies            = new [] { new NuSpecDependency() { Id = "Wave", Version = waveVersion } },
+                                     Dependencies            = new [] { new NuSpecDependency() { Id = "Wave", Version = waveNugetVersion } },
                                      ReleaseNotes            = new [] { "https://github.com/olsh/resharper-configuration-sense/releases" }
                                  };
 
@@ -104,7 +106,11 @@ Task("NugetPack")
          var nugetPackage = string.Format("{0}.{1}.nupkg", projectName, extensionsVersion);
          CopyFile(nugetPackage, string.Format("{0}{1}", riderMetaFolderPath, nugetPackage));
 
-         XmlPoke(string.Format("{0}META-INF/plugin.xml", riderMetaFolderPath), "idea-plugin/version", extensionsVersion, new XmlPokeSettings { Encoding = new UTF8Encoding(false) });
+         var riderMetaFile = string.Format("{0}META-INF/plugin.xml", riderMetaFolderPath);
+         var xmlSettings = new XmlPokeSettings { Encoding = new UTF8Encoding(false) };
+         XmlPoke(riderMetaFile, "idea-plugin/version", extensionsVersion, xmlSettings);
+         XmlPoke(riderMetaFile, "idea-plugin/idea-version/@since-build", waveVersion, xmlSettings);
+         XmlPoke(riderMetaFile, "idea-plugin/idea-version/@until-build", waveVersion + ".*", xmlSettings);
 
          Zip(tempDirectory, string.Format("./{0}.zip", riderMetaFolderName));
      }
