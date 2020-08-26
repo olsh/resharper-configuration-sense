@@ -5,13 +5,11 @@ using JetBrains.ReSharper.Psi.CSharp.Tree;
 
 using Resharper.ConfigurationSense.Highlights;
 
-[assembly:
-    RegisterConfigurableSeverity(SettingsNotFoundHighlighting.SeverityId, null, HighlightingGroupIds.CompilerWarnings,
-        "The setting wasn't found in configuration files", "The setting wasn't found in configuration files",
-        Severity.WARNING)]
-
 namespace Resharper.ConfigurationSense.Highlights
 {
+    [RegisterConfigurableSeverity(SeverityId, null, HighlightingGroupIds.CompilerWarnings,
+        "The setting wasn't found in configuration files", "The setting wasn't found in configuration files",
+        Severity.WARNING)]
     [ConfigurableSeverityHighlighting(SeverityId, CSharpLanguage.Name, OverlapResolve = OverlapResolveKind.WARNING)]
     public class SettingsNotFoundHighlighting : IHighlighting
     {
