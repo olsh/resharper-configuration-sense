@@ -147,7 +147,6 @@ class Build : NukeBuild
     Target SonarBegin => _ => _
         .Unlisted()
         .Before(Compile)
-        .Requires(() => IsRiderHost)
         .Executes(() =>
         {
             SonarScannerBegin(s => s
