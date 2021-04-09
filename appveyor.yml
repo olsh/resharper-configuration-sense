@@ -1,16 +1,13 @@
 version: 1.0.{build}
 image: Visual Studio 2019
-install:
-  - dotnet tool install -g Cake.Tool --version 0.37.0 
 build_script:
 - cmd: >-
-    dotnet cake -Target=CreateArtifact -buildConfig=Release
+    build.cmd upload-artifact --configuration Release
 
-    dotnet cake --Host="Rider" -Target=CreateArtifact -buildConfig=Release
+    build.cmd upload-artifact --configuration Release --is-rider-host
 
-    dotnet cake -Target=Sonar -buildConfig=Release
+    build.cmd sonar --configuration Release
 test: off
 cache:
   - '%USERPROFILE%\.sonar\cache'
   - '%USERPROFILE%\.nuget\packages -> **\*.csproj'
-  - 'tools -> build.cake'

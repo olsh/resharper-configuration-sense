@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+    <metadata>
+        <id>$project$</id>
+        <version>1.0.0</version>
+        <title>Configuration Sense</title>
+        <authors>Oleg Shevchenko</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <license type="expression">MIT</license>
+        <projectUrl>https://github.com/olsh/resharper-configuration-sense</projectUrl>
+        <iconUrl>https://raw.githubusercontent.com/olsh/resharper-configuration-sense/master/images/logo.png</iconUrl>
+        <description>Provides autocomplete and validation for App settings and Connections strings</description>
+        <releaseNotes>https://github.com/olsh/resharper-configuration-sense/releases</releaseNotes>
+        <tags>resharper bootstrap bootstrap$bootstrapVersion$ templates</tags>
+        <dependencies>
+            <dependency id="Wave" version="$waveVersion$" />
+        </dependencies>
+    </metadata>
+
+    <files>
+        <file src="$project$.dll" target="dotFiles" />
+        <file src="$project$.pdb" target="dotFiles" />
+    </files>
+</package>
