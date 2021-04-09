@@ -10,6 +10,8 @@ install:
 
 build_script:
 - cmd: >-
+    build.cmd update-build-version
+
     build.cmd upload-artifact --configuration Release
 
     build.cmd upload-artifact --configuration Release --is-rider-host
