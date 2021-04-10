@@ -11,7 +11,7 @@
         <iconUrl>https://raw.githubusercontent.com/olsh/resharper-configuration-sense/master/images/logo.png</iconUrl>
         <description>Provides autocomplete and validation for App settings and Connections strings</description>
         <releaseNotes>https://github.com/olsh/resharper-configuration-sense/releases</releaseNotes>
-        <tags>resharper bootstrap bootstrap$bootstrapVersion$ templates</tags>
+        <tags>resharper configuration autocomplete intellisense validation netcore</tags>
         <dependencies>
             <dependency id="Wave" version="$waveVersion$" />
         </dependencies>
