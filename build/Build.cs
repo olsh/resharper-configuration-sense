@@ -2,7 +2,6 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.AppVeyor;
@@ -130,7 +129,7 @@ class Build : NukeBuild
             var sourceMetaFolder = RootDirectory / "src" / riderMetaDirectoryName;
             var targetMetaFolder = tempDirectory / riderMetaDirectoryName;
             CopyDirectoryRecursively(sourceMetaFolder, targetMetaFolder);
-            CopyFile(NuGetPackagePath, tempDirectory / NuGetPackageFileName);
+            CopyFile(NuGetPackagePath, tempDirectory / riderMetaDirectoryName / NuGetPackageFileName);
 
             var riderMetaFile = targetMetaFolder / "META-INF" / "plugin.xml";
             XmlPoke(riderMetaFile, "idea-plugin/version", ExtensionVersion);
@@ -138,6 +137,7 @@ class Build : NukeBuild
             XmlPoke(riderMetaFile, "idea-plugin/idea-version/@until-build", WaveMajorVersion + ".*");
 
             // We should re-save wile with UTF-8 without BOM, otherwise Rider fails to install plugin
+            // This workaround can be removed when the feature will be released https://github.com/nuke-build/nuke/pull/734
             File.WriteAllText(riderMetaFile, File.ReadAllText(riderMetaFile), new UTF8Encoding(false));
 
             CompressZip(tempDirectory, RiderPackagePath, fileMode: FileMode.Create);
