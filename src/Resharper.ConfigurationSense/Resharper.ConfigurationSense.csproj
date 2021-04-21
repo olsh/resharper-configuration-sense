@@ -8,6 +8,6 @@
     <SonarQubeTestProject>false</SonarQubeTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.ReSharper.SDK" Version="2021.1.0" />
+    <PackageReference Include="JetBrains.ReSharper.SDK" Version="$(SdkVersion)" />
   </ItemGroup>
 </Project>

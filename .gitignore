@@ -260,3 +260,7 @@ tools/*
 
 # Nuke temp files
 .nuke/temp
+
+# Gradle
+.gradle/
+gradle-build/

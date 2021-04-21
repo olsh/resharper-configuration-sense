@@ -1,5 +1,3 @@
-using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 
 using Nuke.Common;
@@ -8,12 +6,11 @@ using Nuke.Common.CI.AppVeyor;
 using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.NuGet;
 using Nuke.Common.Tools.SonarScanner;
 
-using static Nuke.Common.IO.XmlTasks;
-using static Nuke.Common.IO.CompressionTasks;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
@@ -28,14 +25,11 @@ class Build : NukeBuild
 
     protected override void OnBuildInitialized()
     {
-        var sdkNuGetPackage = IsRiderHost ? "JetBrains.Rider.SDK" : "JetBrains.ReSharper.SDK";
-        var sdkVersion = XmlPeekSingle(
-            Project.Path,
-            $"//PackageReference[@Include='{sdkNuGetPackage}']/@Version");
-        sdkVersion.NotNull("Unable to detect SDK version");
+        SdkVersion = Project.GetProperty("SdkVersion");
+        SdkVersion.NotNull("Unable to detect SDK version");
 
-        ExtensionVersion = AppVeyor == null ? sdkVersion : $"{sdkVersion}.{AppVeyor.BuildNumber}";
-        var sdkMatch = Regex.Match(sdkVersion, @"\d{2}(\d{2}).(\d).*");
+        ExtensionVersion = AppVeyor == null ? SdkVersion : $"{SdkVersion}.{AppVeyor.BuildNumber}";
+        var sdkMatch = Regex.Match(SdkVersion, @"\d{2}(\d{2}).(\d).*");
         WaveMajorVersion = int.Parse(sdkMatch.Groups[1]
             .Value + sdkMatch.Groups[2]
             .Value);
@@ -70,9 +64,13 @@ class Build : NukeBuild
 
     string ExtensionVersion { get; set; }
 
+    string SdkVersion { get; set; }
+
     string WaveVersionsRange { get; set; }
 
     int WaveMajorVersion { get; set; }
+
+    [LocalExecutable("./gradlew.bat")] readonly Tool Gradle;
 
     Target UpdateBuildVersion => _ => _
         .Requires(() => AppVeyor)
@@ -114,34 +112,20 @@ class Build : NukeBuild
         });
 
     Target PackRiderPlugin => _ => _
-        .Unlisted()
-        .TriggeredBy(Pack)
-        .OnlyWhenStatic(() => IsRiderHost)
+        .DependsOn(Compile)
+        .Requires(() => IsRiderHost)
         .Executes(() =>
         {
-            var tempDirectory = RootDirectory / "temp";
-            if (DirectoryExists(tempDirectory))
-            {
-                DeleteDirectory(tempDirectory);
-            }
+            Gradle($"buildPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={SdkVersion} -PDotNetOutputDirectory={OutputDirectory} -PDotNetProjectName={Project.Name}", customLogger:
+                (_, s) =>
+                {
+                    // Gradle writes warnings to stderr
+                    // By default logger will write stderr as errors
+                    // AppVeyor writes errors as special messages and stops the build if such messages more than 500
+                    Logger.Normal(s);
+                });
 
-            var riderMetaDirectoryName = "rider-configuration-sense";
-            var sourceMetaFolder = RootDirectory / "src" / riderMetaDirectoryName;
-            var targetMetaFolder = tempDirectory / riderMetaDirectoryName;
-            CopyDirectoryRecursively(sourceMetaFolder, targetMetaFolder);
-            CopyFile(NuGetPackagePath, tempDirectory / riderMetaDirectoryName / NuGetPackageFileName);
-
-            var riderMetaFile = targetMetaFolder / "META-INF" / "plugin.xml";
-            XmlPoke(riderMetaFile, "idea-plugin/version", ExtensionVersion);
-            XmlPoke(riderMetaFile, "idea-plugin/idea-version/@since-build", WaveMajorVersion);
-            XmlPoke(riderMetaFile, "idea-plugin/idea-version/@until-build", WaveMajorVersion + ".*");
-
-            // We should re-save wile with UTF-8 without BOM, otherwise Rider fails to install plugin
-            // This workaround can be removed when the feature will be released https://github.com/nuke-build/nuke/pull/734
-            File.WriteAllText(riderMetaFile, File.ReadAllText(riderMetaFile), new UTF8Encoding(false));
-
-            CompressZip(tempDirectory, RiderPackagePath, fileMode: FileMode.Create);
-            DeleteFile(NuGetPackagePath);
+            CopyFile(RootDirectory / "gradle-build" / "distributions" / $"rider-configuration-sense-{ExtensionVersion}.zip", RiderPackagePath, FileExistsPolicy.Overwrite);
         });
 
     Target SonarBegin => _ => _
@@ -169,14 +153,21 @@ class Build : NukeBuild
                 .SetFramework("net5.0"));
         });
 
-    Target UploadArtifact => _ => _
+    Target UploadReSharperArtifact => _ => _
         .DependsOn(Pack)
-        .After(PackRiderPlugin)
         .Requires(() => AppVeyor)
+        .Requires(() => !IsRiderHost)
         .Executes(() =>
         {
-            AppVeyor.PushArtifact(IsRiderHost
-                ? RiderPackagePath
-                : NuGetPackagePath);
+            AppVeyor.PushArtifact(NuGetPackagePath);
+        });
+
+    Target UploadRiderArtifact => _ => _
+        .DependsOn(PackRiderPlugin)
+        .Requires(() => AppVeyor)
+        .Requires(() => IsRiderHost)
+        .Executes(() =>
+        {
+            AppVeyor.PushArtifact(RiderPackagePath);
         });
 }
