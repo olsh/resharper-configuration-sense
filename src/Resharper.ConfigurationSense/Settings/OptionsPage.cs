@@ -6,18 +6,19 @@ using JetBrains.Application.UI.Components;
 using JetBrains.Application.UI.Controls.StringCollectionEdit.Impl;
 using JetBrains.Application.UI.Options;
 using JetBrains.Application.UI.Options.OptionPages;
-using JetBrains.Application.UI.Options.OptionsDialog;
 using JetBrains.Lifetimes;
 using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Feature.Services.Resources;
 using JetBrains.ReSharper.Feature.Services.Util.FilesAndDirs;
 using JetBrains.ReSharper.Resources.Shell;
+using JetBrains.ReSharper.UnitTestFramework.UI.Options;
+
 using Resharper.ConfigurationSense.Extensions;
 
 namespace Resharper.ConfigurationSense.Settings
 {
     [OptionsPage(PageId, "Configuration Sense", typeof(BulbThemedIcons.YellowBulbVS), ParentId = EnvironmentPage.Pid)]
-    public sealed class ConfigurationSenseOptionsPage : CustomSimpleOptionsPage
+    public sealed class ConfigurationSenseOptionsPage : BetterCustomOptionsPage
     {
         private const string PageId = "Configuration Sense";
 
