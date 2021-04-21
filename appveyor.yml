@@ -22,5 +22,4 @@ test: off
 
 cache:
   - '%USERPROFILE%\.sonar\cache'
-  - '%USERPROFILE%\.nuget\packages -> **\*.csproj'
   - '.gradle -> build.gradle'
