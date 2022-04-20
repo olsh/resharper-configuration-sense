@@ -118,7 +118,7 @@ class Build : NukeBuild
         {
             // JetBrains is not very consistent in versioning
             // https://github.com/olsh/resharper-structured-logging/issues/35#issuecomment-892764206
-            var productVersion = SdkVersion is "2021.2.0" or "2021.3.0" ? SdkVersion.TrimEnd('.', '0') : SdkVersion;
+            var productVersion = SdkVersion.TrimEnd('.', '0');
 
             Gradle($"buildPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={productVersion} -PDotNetOutputDirectory={OutputDirectory} -PDotNetProjectName={Project.Name}", customLogger:
                 (_, s) =>
