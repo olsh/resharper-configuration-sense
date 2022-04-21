@@ -11,6 +11,8 @@ using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.NuGet;
 using Nuke.Common.Tools.SonarScanner;
 
+using Serilog;
+
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
@@ -126,7 +128,7 @@ class Build : NukeBuild
                     // Gradle writes warnings to stderr
                     // By default logger will write stderr as errors
                     // AppVeyor writes errors as special messages and stops the build if such messages more than 500
-                    Logger.Normal(s);
+                    Log.Information(s);
                 });
 
             CopyFile(RootDirectory / "gradle-build" / "distributions" / $"rider-configuration-sense-{ExtensionVersion}.zip", RiderPackagePath, FileExistsPolicy.Overwrite);
