@@ -9,5 +9,5 @@ trim_trailing_whitespace = true
 dotnet_separate_import_directive_groups = true
 dotnet_sort_system_directives_first = true
 
-[{*.csproj,*.json,*.yml,*.xml}]
+[{*.csproj,*.json,*.yml,*.xml,*.props}]
 indent_size = 2
