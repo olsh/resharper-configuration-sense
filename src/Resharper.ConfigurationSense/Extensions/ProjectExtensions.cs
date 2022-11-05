@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -62,7 +62,7 @@ namespace Resharper.ConfigurationSense.Extensions
                     if ((property.Value.Type != JTokenType.Object && property.Value.Type != JTokenType.Array
                              && settingType == JsonSettingType.Value) || settingType == JsonSettingType.All)
                     {
-                        formattedPath = FormatJsonPath(property);
+                        formattedPath = property.GetSettingsPath();
                     }
 
                     if (string.IsNullOrEmpty(formattedPath))
@@ -145,12 +145,6 @@ namespace Resharper.ConfigurationSense.Extensions
             }
 
             return result.Select(x => new KeyValueSetting(x.Key, string.Join(", ", x.Value)));
-        }
-
-        private static string FormatJsonPath(JToken property)
-        {
-            var formattedPath = property.Path.Replace(".", ":");
-            return formattedPath;
         }
 
         private static IEnumerable<IXmlTag> GetSettingTags(string settingsTagName, IProjectFile configFile)
