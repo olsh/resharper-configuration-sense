@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.AppVeyor;
-using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
@@ -19,7 +18,6 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.SonarScanner.SonarScannerTasks;
 using static Nuke.Common.Tools.NuGet.NuGetTasks;
 
-[CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
 class Build : NukeBuild
 {
@@ -29,6 +27,11 @@ class Build : NukeBuild
     {
         SdkVersion = Project.GetProperty("SdkVersion");
         SdkVersion.NotNull("Unable to detect SDK version");
+
+        var versionMatch = Regex.Match(SdkVersion, @"(?<version>[\d\.]+)(?<suffix>-.*)?");
+
+        SdkVersionWithoutSuffix = versionMatch.Groups["version"].ToString();
+        SdkVersionSuffix = versionMatch.Groups["suffix"].ToString();
 
         ExtensionVersion = AppVeyor == null ? SdkVersion : $"{SdkVersion}.{AppVeyor.BuildNumber}";
         var sdkMatch = Regex.Match(SdkVersion, @"\d{2}(\d{2}).(\d).*");
@@ -67,6 +70,10 @@ class Build : NukeBuild
     string ExtensionVersion { get; set; }
 
     string SdkVersion { get; set; }
+
+    string SdkVersionSuffix { get; set; }
+
+    string SdkVersionWithoutSuffix { get; set; }
 
     string WaveVersionsRange { get; set; }
 
@@ -120,7 +127,11 @@ class Build : NukeBuild
         {
             // JetBrains is not very consistent in versioning
             // https://github.com/olsh/resharper-structured-logging/issues/35#issuecomment-892764206
-            var productVersion = SdkVersion.TrimEnd('.', '0');
+            var productVersion = SdkVersionWithoutSuffix.TrimEnd('.', '0');
+            if (!string.IsNullOrEmpty(SdkVersionSuffix))
+            {
+                productVersion += $"{SdkVersionSuffix.Replace("0", string.Empty).ToUpper()}-SNAPSHOT";
+            }
 
             Gradle($"buildPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={productVersion} -PDotNetOutputDirectory={OutputDirectory} -PDotNetProjectName={Project.Name}", customLogger:
                 (_, s) =>
@@ -128,7 +139,8 @@ class Build : NukeBuild
                     // Gradle writes warnings to stderr
                     // By default logger will write stderr as errors
                     // AppVeyor writes errors as special messages and stops the build if such messages more than 500
-                    Log.Information(s);
+                    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+                    Log.Debug(s);
                 });
 
             CopyFile(RootDirectory / "gradle-build" / "distributions" / $"rider-configuration-sense-{ExtensionVersion}.zip", RiderPackagePath, FileExistsPolicy.Overwrite);

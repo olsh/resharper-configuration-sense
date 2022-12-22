@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -29,7 +29,8 @@ namespace Resharper.ConfigurationSense.Extensions
 
             try
             {
-                return JsonConvert.DeserializeObject<HashSet<string>>(customConfigurationFilesJson);
+                return JsonConvert.DeserializeObject<HashSet<string>>(customConfigurationFilesJson)
+                       ?? Enumerable.Empty<string>();
             }
             // ReSharper disable once CatchAllClause
             catch (Exception)

@@ -18,6 +18,7 @@ namespace Resharper.ConfigurationSense.Analyzers
          HighlightingTypes = new[] { typeof(SettingsNotFoundHighlighting) })]
     public class AccessorSettingsAnalyzer : ElementProblemAnalyzer<IElementAccessExpression>
     {
+        // ReSharper disable once CognitiveComplexity
         protected override void Run(
             IElementAccessExpression element,
             ElementProblemAnalyzerData data,

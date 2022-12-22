@@ -1,9 +1,7 @@
-﻿using JetBrains.DocumentModel;
+using JetBrains.DocumentModel;
 using JetBrains.ReSharper.Feature.Services.Daemon;
 using JetBrains.ReSharper.Psi.CSharp;
 using JetBrains.ReSharper.Psi.CSharp.Tree;
-
-using Resharper.ConfigurationSense.Highlights;
 
 namespace Resharper.ConfigurationSense.Highlights
 {
