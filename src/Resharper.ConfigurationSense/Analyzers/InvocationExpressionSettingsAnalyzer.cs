@@ -16,6 +16,7 @@ namespace Resharper.ConfigurationSense.Analyzers
          HighlightingTypes = new[] { typeof(SettingsNotFoundHighlighting) })]
     public class InvocationExpressionSettingsAnalyzer : ElementProblemAnalyzer<IInvocationExpression>
     {
+        // ReSharper disable once CognitiveComplexity
         protected override void Run(
             IInvocationExpression element,
             ElementProblemAnalyzerData data,

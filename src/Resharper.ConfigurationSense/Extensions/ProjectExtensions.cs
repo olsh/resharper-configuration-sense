@@ -20,6 +20,7 @@ namespace Resharper.ConfigurationSense.Extensions
 {
     public static class ProjectExtensions
     {
+        // ReSharper disable once CognitiveComplexity
         public static IEnumerable<KeyValueSetting> GetJsonProjectSettings(
             this IProject project,
             JsonSettingType settingType,
@@ -95,6 +96,7 @@ namespace Resharper.ConfigurationSense.Extensions
             return settings.Select(x => new KeyValueSetting(x.Key, string.Join(", ", x.Value)));
         }
 
+        // ReSharper disable once CognitiveComplexity
         public static IEnumerable<KeyValueSetting> GetXmlProjectSettings(
             this IProjectFolder project,
             string settingsTagName,
