@@ -47,7 +47,7 @@ namespace Resharper.ConfigurationSense.Settings
 
             var customConfigurationFiles = new StringCollectionEditViewModel(
                 lifetime,
-                @"Additional configuration files. 
+                @"Additional configuration files.
 You don't need to add appsettings.json, web.config and app.config (and transformation files) to the list, they're scanned by default.
 Only *.json and *.xml files are supported.",
                 buttonProviderFactory,
@@ -67,7 +67,7 @@ Only *.json and *.xml files are supported.",
                 }
             }
 
-            customConfigurationFiles.Items.CollectionChanged += (o, e) =>
+            customConfigurationFiles.Items.CollectionChanged += (_, _) =>
                 {
                     var hashSet = new HashSet<string>();
                     foreach (var item in customConfigurationFiles.Items)
