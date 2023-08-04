@@ -11,12 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="6.3.0" />
+    <PackageReference Include="Nuke.Common" Version="7.0.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageDownload Include="dotnet-sonarscanner" Version="[5.9.2]" />
-    <PackageDownload Include="NuGet.CommandLine" Version="[6.3.1]" />
+    <PackageDownload Include="dotnet-sonarscanner" Version="[5.13.0]" />
+    <PackageDownload Include="NuGet.CommandLine" Version="[6.5.0]" />
   </ItemGroup>
 
 </Project>

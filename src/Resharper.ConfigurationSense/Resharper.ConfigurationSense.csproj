@@ -3,6 +3,7 @@
     <TargetFramework>net472</TargetFramework>
     <VersionPrefix>2021.2.0</VersionPrefix>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <SonarQubeTestProject>false</SonarQubeTestProject>

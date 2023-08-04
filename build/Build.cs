@@ -79,7 +79,7 @@ class Build : NukeBuild
 
     int WaveMajorVersion { get; set; }
 
-    [LocalExecutable("./gradlew.bat")] readonly Tool Gradle;
+    [LocalPath("./gradlew.bat")] readonly Tool Gradle;
 
     Target UpdateBuildVersion => _ => _
         .Requires(() => AppVeyor)
@@ -133,7 +133,7 @@ class Build : NukeBuild
                 productVersion += $"{SdkVersionSuffix.Replace("0", string.Empty).ToUpper()}-SNAPSHOT";
             }
 
-            Gradle($"buildPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={productVersion} -PDotNetOutputDirectory={OutputDirectory} -PDotNetProjectName={Project.Name}", customLogger:
+            Gradle($"buildPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={productVersion} -PDotNetOutputDirectory={OutputDirectory} -PDotNetProjectName={Project.Name}", logger:
                 (_, s) =>
                 {
                     // Gradle writes warnings to stderr
