@@ -38,7 +38,7 @@ class Build : NukeBuild
         WaveMajorVersion = int.Parse(sdkMatch.Groups[1]
             .Value + sdkMatch.Groups[2]
             .Value);
-        WaveVersionsRange = $"[{WaveMajorVersion}.0, {WaveMajorVersion + 1}.0)";
+        WaveVersionsRange = $"{WaveMajorVersion}.0";
 
         base.OnBuildInitialized();
     }
