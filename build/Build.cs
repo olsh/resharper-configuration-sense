@@ -1,9 +1,10 @@
 using System.Text.RegularExpressions;
 
+using DefaultNamespace;
+
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.AppVeyor;
-using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
@@ -12,8 +13,6 @@ using Nuke.Common.Tools.SonarScanner;
 
 using Serilog;
 
-using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.SonarScanner.SonarScannerTasks;
 using static Nuke.Common.Tools.NuGet.NuGetTasks;
@@ -21,11 +20,13 @@ using static Nuke.Common.Tools.NuGet.NuGetTasks;
 [ShutdownDotNetAfterServerBuild]
 class Build : NukeBuild
 {
-    public static int Main() => Execute<Build>(x => x.Pack);
+    public static int Main() => Execute<Build>(x => x.PackResharper, x => x.PackRider);
 
     protected override void OnBuildInitialized()
     {
-        SdkVersion = Project.GetProperty("SdkVersion");
+        // Since we use global package management for dependencies
+        // We just pick up the first solution
+        SdkVersion = Solution.Resharper_ConfigurationSense.GetProperty("SdkVersion");
         SdkVersion.NotNull("Unable to detect SDK version");
 
         var versionMatch = Regex.Match(SdkVersion, @"(?<version>[\d\.]+)(?<suffix>-.*)?");
@@ -47,25 +48,11 @@ class Build : NukeBuild
 
     [Parameter] readonly string Configuration = "Release";
 
-    [Parameter] readonly bool IsRiderHost;
+    [Parameter("SonarQube API key", Name = "sonar:apikey")] readonly string SonarQubeApiKey;
 
-    [Solution] readonly Solution Solution;
+    [Solution(GenerateProjects = true)] readonly Solution Solution;
 
-    string NuGetPackageFileName => $"{Project.Name}.{ExtensionVersion}.nupkg";
-
-    string NuGetPackagePath => RootDirectory / NuGetPackageFileName;
-
-    string RiderPackagePath => RootDirectory / "rider-configuration-sense.zip";
-
-    string SonarQubeApiKey => GetVariable<string>("sonar:apikey");
-
-    Project Project => IsRiderHost
-        ? Solution.GetProject("Resharper.ConfigurationSense.Rider")
-        : Solution.GetProject("Resharper.ConfigurationSense");
-
-    AbsolutePath ProjectFilePath => Project.Path;
-
-    AbsolutePath OutputDirectory => Project.Directory / "bin" / Configuration;
+    [LocalPath("./gradlew.bat")] readonly Tool Gradle;
 
     string ExtensionVersion { get; set; }
 
@@ -79,10 +66,9 @@ class Build : NukeBuild
 
     int WaveMajorVersion { get; set; }
 
-    [LocalPath("./gradlew.bat")] readonly Tool Gradle;
-
     Target UpdateBuildVersion => _ => _
         .Requires(() => AppVeyor)
+        .Before(Restore)
         .Executes(() =>
         {
             AppVeyor.Instance.UpdateBuildVersion(ExtensionVersion);
@@ -92,7 +78,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             DotNetRestore(s => s
-                .SetProjectFile(ProjectFilePath));
+                .SetProjectFile(Solution));
         });
 
     Target Compile => _ => _
@@ -100,29 +86,27 @@ class Build : NukeBuild
         .Executes(() =>
         {
             DotNetBuild(s => s
-                .SetProjectFile(ProjectFilePath)
+                .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .SetVersionPrefix(ExtensionVersion)
-                .SetOutputDirectory(OutputDirectory)
                 .EnableNoRestore());
         });
 
-    Target Pack => _ => _
+    Target PackResharper => _ => _
         .DependsOn(Compile)
         .Executes(() =>
         {
             NuGetPack(s => s
                 .SetTargetPath(BuildProjectDirectory / "Resharper.ConfigurationSense.nuspec")
                 .SetVersion(ExtensionVersion)
-                .SetBasePath(OutputDirectory)
-                .AddProperty("project", Project.Name)
+                .SetBasePath(Solution.Resharper_ConfigurationSense.GetOutputDirectory(Configuration))
+                .AddProperty("project", Solution.Resharper_ConfigurationSense.Name)
                 .AddProperty("waveVersion", WaveVersionsRange)
                 .SetOutputDirectory(RootDirectory));
         });
 
-    Target PackRiderPlugin => _ => _
+    Target PackRider => _ => _
         .DependsOn(Compile)
-        .Requires(() => IsRiderHost)
         .Executes(() =>
         {
             // JetBrains is not very consistent in versioning
@@ -133,7 +117,8 @@ class Build : NukeBuild
                 productVersion += $"{SdkVersionSuffix.Replace("0", string.Empty).ToUpper()}-SNAPSHOT";
             }
 
-            Gradle($"buildPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={productVersion} -PDotNetOutputDirectory={OutputDirectory} -PDotNetProjectName={Project.Name}", logger:
+            Gradle(@$"buildPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={productVersion} -PDotNetOutputDirectory={Solution.Resharper_ConfigurationSense_Rider.GetOutputDirectory(Configuration)} -PDotNetProjectName={Solution.Resharper_ConfigurationSense_Rider.Name}",
+                logger:
                 (_, s) =>
                 {
                     // Gradle writes warnings to stderr
@@ -142,8 +127,6 @@ class Build : NukeBuild
                     // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                     Log.Debug(s);
                 });
-
-            CopyFile(RootDirectory / "gradle-build" / "distributions" / $"rider-configuration-sense-{ExtensionVersion}.zip", RiderPackagePath, FileExistsPolicy.Overwrite);
         });
 
     Target SonarBegin => _ => _
@@ -151,8 +134,7 @@ class Build : NukeBuild
         .Before(Compile)
         .Executes(() =>
         {
-            SonarScannerBegin(s => s
-                .SetServer("https://sonarcloud.io")
+            SonarScannerBegin(s => s.SetServer("https://sonarcloud.io")
                 .SetFramework("net5.0")
                 .SetLogin(SonarQubeApiKey)
                 .SetProjectKey("resharper-configuration-sense")
@@ -161,31 +143,12 @@ class Build : NukeBuild
                 .SetVersion("1.0.0.0"));
         });
 
-    Target Sonar => _ => _
+    Target SonarEnd => _ => _
         .DependsOn(SonarBegin, Compile)
-        .Requires(() => !IsRiderHost)
         .Executes(() =>
         {
             SonarScannerEnd(s => s
                 .SetLogin(SonarQubeApiKey)
                 .SetFramework("net5.0"));
-        });
-
-    Target UploadReSharperArtifact => _ => _
-        .DependsOn(Pack)
-        .Requires(() => AppVeyor)
-        .Requires(() => !IsRiderHost)
-        .Executes(() =>
-        {
-            AppVeyor.PushArtifact(NuGetPackagePath);
-        });
-
-    Target UploadRiderArtifact => _ => _
-        .DependsOn(PackRiderPlugin)
-        .Requires(() => AppVeyor)
-        .Requires(() => IsRiderHost)
-        .Executes(() =>
-        {
-            AppVeyor.PushArtifact(RiderPackagePath);
         });
 }

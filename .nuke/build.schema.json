@@ -38,9 +38,6 @@
             "VSCode"
           ]
         },
-        "IsRiderHost": {
-          "type": "boolean"
-        },
         "NoLogo": {
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"
@@ -71,20 +68,22 @@
             "type": "string",
             "enum": [
               "Compile",
-              "Pack",
-              "PackRiderPlugin",
+              "PackResharper",
+              "PackRider",
               "Restore",
-              "Sonar",
               "SonarBegin",
-              "UpdateBuildVersion",
-              "UploadReSharperArtifact",
-              "UploadRiderArtifact"
+              "SonarEnd",
+              "UpdateBuildVersion"
             ]
           }
         },
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded"
+        },
+        "sonar:apikey": {
+          "type": "string",
+          "description": "SonarQube API key"
         },
         "Target": {
           "type": "array",
@@ -93,14 +92,12 @@
             "type": "string",
             "enum": [
               "Compile",
-              "Pack",
-              "PackRiderPlugin",
+              "PackResharper",
+              "PackRider",
               "Restore",
-              "Sonar",
               "SonarBegin",
-              "UpdateBuildVersion",
-              "UploadReSharperArtifact",
-              "UploadRiderArtifact"
+              "SonarEnd",
+              "UpdateBuildVersion"
             ]
           }
         },

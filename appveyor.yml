@@ -1,4 +1,3 @@
-version: 1.0.{build}
 image: Visual Studio 2022
 
 skip_branch_with_pr: true
@@ -10,16 +9,14 @@ install:
 
 build_script:
 - cmd: >-
-    build.cmd update-build-version
-
-    build.cmd upload-rider-artifact --configuration Release --is-rider-host
-
-    build.cmd upload-resharper-artifact --configuration Release
-
-    build.cmd sonar --configuration Release
+    build.cmd update-build-version pack-resharper pack-rider sonar-end --configuration Release
 
 test: off
 
 cache:
   - '%USERPROFILE%\.sonar\cache'
   - '.gradle -> build.gradle'
+
+artifacts:
+  - path: *.nupkg
+  - path: gradle-build/distributions/*.zip
