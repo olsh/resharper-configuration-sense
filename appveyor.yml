@@ -18,5 +18,5 @@ cache:
   - '.gradle -> build.gradle'
 
 artifacts:
-  - path: *.nupkg
+  - path: '*.nupkg'
   - path: gradle-build/distributions/*.zip
