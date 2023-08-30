@@ -77,8 +77,10 @@ class Build : NukeBuild
     Target Restore => _ => _
         .Executes(() =>
         {
-            DotNetRestore(s => s
-                .SetProjectFile(Solution));
+            DotNetRestore(s =>
+                s.SetProjectFile(Solution.Resharper_ConfigurationSense));
+            DotNetRestore(s =>
+                s.SetProjectFile(Solution.Resharper_ConfigurationSense_Rider));
         });
 
     Target Compile => _ => _
