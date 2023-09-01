@@ -136,13 +136,35 @@ class Build : NukeBuild
         .Before(Compile)
         .Executes(() =>
         {
-            SonarScannerBegin(s => s.SetServer("https://sonarcloud.io")
-                .SetFramework("net5.0")
-                .SetLogin(SonarQubeApiKey)
-                .SetProjectKey("resharper-configuration-sense")
-                .SetName("Configuration Sense")
-                .SetOrganization("olsh-github")
-                .SetVersion("1.0.0.0"));
+            SonarScannerBegin(s =>
+            {
+                s = s
+                    .SetServer("https://sonarcloud.io")
+                    .SetFramework("net5.0")
+                    .SetLogin(SonarQubeApiKey)
+                    .SetProjectKey("resharper-configuration-sense")
+                    .SetName("R# Configuration Sense")
+                    .SetOrganization("olsh")
+                    .SetVersion("1.0.0.0");
+
+                if (AppVeyor != null)
+                {
+                    if (AppVeyor.PullRequestNumber != null)
+                    {
+                        s = s
+                            .SetPullRequestKey(AppVeyor.PullRequestNumber.ToString())
+                            .SetPullRequestBase(AppVeyor.RepositoryBranch)
+                            .SetPullRequestBranch(AppVeyor.PullRequestHeadRepositoryBranch);
+                    }
+                    else
+                    {
+                        s = s
+                            .SetBranchName(AppVeyor.RepositoryBranch);
+                    }
+                }
+
+                return s;
+            });
         });
 
     Target SonarEnd => _ => _
