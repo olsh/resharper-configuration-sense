@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using JetBrains.Application.Parts;
 using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure;
 using Resharper.ConfigurationSense.Constants;
 using Resharper.ConfigurationSense.Models;
 
 namespace Resharper.ConfigurationSense.Components
 {
+    [DerivedComponentsInstantiationRequirement(InstantiationRequirement.DeadlockSafe)]
     public interface IGenericSettingsProvider
     {
         LinkedList<KeyValueSettingLookupItem> GetJsonSettingsLookupItems(

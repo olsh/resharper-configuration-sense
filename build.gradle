@@ -8,8 +8,13 @@ version = ext.PluginVersion
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
+}
+
+compileJava {
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
 }
 
 sourceSets {

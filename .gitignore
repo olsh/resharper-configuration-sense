@@ -265,3 +265,11 @@ tools/*
 .gradle/
 gradle-build/
 build/classes/
+build/tmp/
+
+# IntelliJ Platform
+.intellijPlatform/
+
+# Claude Code
+.claude/
+CLAUDE.md
