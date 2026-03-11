@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using JetBrains.Application;
+using JetBrains.Application.Parts;
 using JetBrains.DocumentModel;
 using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure;
@@ -13,7 +14,7 @@ using Resharper.ConfigurationSense.Models;
 
 namespace Resharper.ConfigurationSense.Components
 {
-    [ShellComponent]
+    [ShellComponent(Instantiation.DemandAnyThreadSafe)]
     public class GenericSettingsSuggestionProvider : IGenericSettingsProvider
     {
         private readonly ProjectModelElementPresentationService _presentationService;
@@ -81,7 +82,7 @@ namespace Resharper.ConfigurationSense.Components
             return lookupItems;
         }
 
-        private IRangeMarker CreateRangeMarker(ISpecificCodeCompletionContext context)
+        private static IRangeMarker CreateRangeMarker(ISpecificCodeCompletionContext context)
         {
             var rangeMarker =
                 new TextRange(context.BasicContext.CaretDocumentOffset.Offset).CreateRangeMarker(
