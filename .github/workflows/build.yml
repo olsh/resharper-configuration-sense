@@ -48,7 +48,8 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Set up Java
-        # Gradle compiles the Rider frontend against Java 21
+        # Only the JDK Gradle itself runs on. The Rider frontend is compiled with a toolchain
+        # matching the target platform, which Gradle provisions via the foojay resolver
         uses: actions/setup-java@v6
         with:
           distribution: temurin
