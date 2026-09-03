@@ -1,1 +1,8 @@
+plugins {
+    // The IntelliJ Platform Gradle Plugin derives the JVM toolchain from the target Rider build
+    // (2026.2 wants Java 25), so let Gradle provision that JDK rather than requiring the CI runner
+    // or a developer machine to have the matching one installed by hand
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
 rootProject.name = 'rider-configuration-sense'
