@@ -1,0 +1,15 @@
+﻿using Microsoft.Extensions.Configuration;
+
+namespace ConsoleApp
+{
+    public static class Program
+    {
+        public static void Main(IConfiguration configuration)
+        {
+            var section = configuration.GetSection(|"MissingSection"|(0));
+        }
+    }
+}
+
+---------------------------------------------------------
+(0): ReSharper Warning: Section MissingSection wasn't found in configuration files

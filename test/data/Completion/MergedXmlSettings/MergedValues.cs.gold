@@ -1,0 +1,16 @@
+﻿Completion: Basic
+Prefix: """
+Count: 1
+Focus: Hard
+Range: "var value = ConfigurationManager.AppSettings["♦"];"
+                                                     ▲▲△
+
+##### RELEVANCE SORT #####
+
+                            [FromSingleCompletion, FromLightAndDynamicEvaluation, PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
+ṢharedSetting =  |from app.config, from web.config    <==
+
+##### ALPHABETIC SORT #####
+
+                            [Light, Generic]
+ṢharedSetting =  |from app.config, from web.config    <==

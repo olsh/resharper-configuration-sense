@@ -1,0 +1,18 @@
+﻿Completion: Basic
+Prefix: """
+Count: 2
+Focus: Hard
+Range: "var value = ConfigurationManager.ConnectionStrings["♦"];"
+                                                           ▲▲△
+
+##### RELEVANCE SORT #####
+
+                            [FromSingleCompletion, FromLightAndDynamicEvaluation, PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
+F̣irstConnection =  |Data Source=first    <==
+ṢecondConnection =  |Data Source=second
+
+##### ALPHABETIC SORT #####
+
+                            [Light, Generic]
+F̣irstConnection =  |Data Source=first    <==
+ṢecondConnection =  |Data Source=second

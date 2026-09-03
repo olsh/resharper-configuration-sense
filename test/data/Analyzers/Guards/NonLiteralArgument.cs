@@ -1,0 +1,13 @@
+﻿using System.Configuration;
+
+namespace ConsoleApp
+{
+    public static class Program
+    {
+        public static void Main()
+        {
+            var key = "MissingSetting";
+            var value = ConfigurationManager.AppSettings[key];
+        }
+    }
+}

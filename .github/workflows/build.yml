@@ -26,7 +26,10 @@ env:
 
 jobs:
   build:
-    name: Build and pack
+    # This name is master's required status check, so Dependabot auto-merge waits for a
+    # green build instead of merging straight away. Renaming the job without updating the
+    # branch protection rule blocks every pull request, because the check never reports.
+    name: Build and test
     runs-on: windows-2025
 
     permissions:
@@ -59,6 +62,17 @@ jobs:
 
       - name: Validate solution
         run: dotnet sln Resharper.ConfigurationSense.slnx list
+
+      - name: Run tests
+        run: .\build.cmd Test --configuration Release
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: test/results/*.xml
+          if-no-files-found: error
 
       - name: Build and pack
         run: .\build.cmd PackResharper PackRider --configuration Release

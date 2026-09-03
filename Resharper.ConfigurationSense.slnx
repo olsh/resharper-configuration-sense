@@ -11,6 +11,8 @@
   <Project Path="build/_build.csproj">
     <Build Project="false" />
   </Project>
+  <Project Path="test/src/Resharper.ConfigurationSense.Tests.csproj" />
+  <Project Path="test/src/Resharper.ConfigurationSense.Rider.Tests.csproj" />
   <Project Path="src/Resharper.ConfigurationSense/Resharper.ConfigurationSense.csproj" />
   <Project Path="src/Resharper.ConfigurationSense/Resharper.ConfigurationSense.Rider.csproj" />
 </Solution>

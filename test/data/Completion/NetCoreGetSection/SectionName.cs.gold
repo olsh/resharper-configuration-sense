@@ -1,0 +1,32 @@
+﻿Completion: Basic
+Prefix: """
+Count: 5
+Focus: Hard
+Range: "var section = configuration.GetSection("♦");"
+                                               ▲▲△
+
+##### RELEVANCE SORT #####
+
+                            [FromSingleCompletion, FromLightAndDynamicEvaluation, PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
+C̣onnectionStrings =  |{
+  "FirstConnection": "Data Source=first"
+}    <==
+C̣onnectionStrings:FirstConnection =  |Data Source=first
+F̣irstSetting =  |1
+Ṇested =  |{
+  "Value": "2"
+}
+Ṇested:Value =  |2
+
+##### ALPHABETIC SORT #####
+
+                            [Light, Generic]
+C̣onnectionStrings =  |{
+  "FirstConnection": "Data Source=first"
+}    <==
+C̣onnectionStrings:FirstConnection =  |Data Source=first
+F̣irstSetting =  |1
+Ṇested =  |{
+  "Value": "2"
+}
+Ṇested:Value =  |2

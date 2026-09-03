@@ -1,0 +1,20 @@
+﻿Completion: Basic
+Prefix: """
+Count: 3
+Focus: Hard
+Range: "var value = configuration["♦"];"
+                                  ▲▲△
+
+##### RELEVANCE SORT #####
+
+                            [FromSingleCompletion, FromLightAndDynamicEvaluation, PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
+C̣onnectionStrings:FirstConnection =  |Data Source=first    <==
+F̣irstSetting =  |1
+Ṇested:Value =  |2
+
+##### ALPHABETIC SORT #####
+
+                            [Light, Generic]
+C̣onnectionStrings:FirstConnection =  |Data Source=first    <==
+F̣irstSetting =  |1
+Ṇested:Value =  |2
