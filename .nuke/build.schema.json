@@ -29,7 +29,8 @@
         "PackRider",
         "PublishReSharperPlugin",
         "PublishRiderPlugin",
-        "Restore"
+        "Restore",
+        "Test"
       ]
     },
     "Verbosity": {

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SonarQubeTestProject>true</SonarQubeTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.ReSharper.SDK.Tests" Version="$(SdkVersion)" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Resharper.ConfigurationSense\Resharper.ConfigurationSense.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <!-- Both test projects share this folder, so each one needs its own output directory -->
+    <OutputPath>bin\$(MSBuildProjectName)\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+</Project>

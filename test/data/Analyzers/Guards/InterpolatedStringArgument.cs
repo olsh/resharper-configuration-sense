@@ -1,0 +1,13 @@
+﻿using Microsoft.Extensions.Configuration;
+
+namespace ConsoleApp
+{
+    public static class Program
+    {
+        public static void Main(IConfiguration configuration)
+        {
+            var suffix = "Setting";
+            var value = configuration[$"Missing{suffix}"];
+        }
+    }
+}

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <LangVersion>latest</LangVersion>
+    <!-- JetBrains.Rider.SDK's own transitive floor is not published on nuget.org -->
+    <NoWarn>$(NoWarn);NU1603</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Exclude the project from analysis to prevent duplications -->
+    <SonarQubeExclude>true</SonarQubeExclude>
+    <RootNamespace>Resharper.ConfigurationSense.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Rider.SDK.Tests" Version="$(SdkVersion)" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Resharper.ConfigurationSense\Resharper.ConfigurationSense.Rider.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <DefineConstants>RIDER</DefineConstants>
+    <!-- Both test projects share this folder, so each one needs its own output directory -->
+    <OutputPath>bin\$(MSBuildProjectName)\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+</Project>

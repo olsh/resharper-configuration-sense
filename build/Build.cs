@@ -11,6 +11,7 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.NUnit;
 using Nuke.Common.Tools.NuGet;
 using Nuke.Common.Utilities.Collections;
 
@@ -18,6 +19,7 @@ using Serilog;
 
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using static Nuke.Common.Tools.NUnit.NUnitTasks;
 using static Nuke.Common.Tools.NuGet.NuGetTasks;
 
 [ShutdownDotNetAfterServerBuild]
@@ -79,6 +81,8 @@ class Build : NukeBuild
     AbsolutePath ReSharperPackagePath =>
         RootDirectory / $"{Solution.Resharper_ConfigurationSense.Name}.{ExtensionVersion}.nupkg";
 
+    AbsolutePath TestResultsDirectory => RootDirectory / "test" / "results";
+
     // JetBrains is not very consistent in versioning
     // https://github.com/olsh/resharper-structured-logging/issues/35#issuecomment-892764206
     string RiderProductVersion
@@ -105,6 +109,10 @@ class Build : NukeBuild
                 s.SetProjectFile(Solution.Resharper_ConfigurationSense));
             DotNetRestore(s =>
                 s.SetProjectFile(Solution.Resharper_ConfigurationSense_Rider));
+            DotNetRestore(s =>
+                s.SetProjectFile(Solution.Resharper_ConfigurationSense_Tests));
+            DotNetRestore(s =>
+                s.SetProjectFile(Solution.Resharper_ConfigurationSense_Rider_Tests));
         });
 
     Target Compile => _ => _
@@ -116,6 +124,16 @@ class Build : NukeBuild
                 .SetConfiguration(Configuration)
                 .SetVersionPrefix(ExtensionVersion)
                 .EnableNoRestore());
+        });
+
+    Target Test => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            TestResultsDirectory.CreateDirectory();
+
+            RunTests(Solution.Resharper_ConfigurationSense_Tests);
+            RunTests(Solution.Resharper_ConfigurationSense_Rider_Tests);
         });
 
     Target PackResharper => _ => _
@@ -174,6 +192,18 @@ class Build : NukeBuild
                 environmentVariables: environmentVariables,
                 logger: GradleLogger);
         });
+
+    // Both test projects share test/src, so each one writes to bin/<project>/<configuration>.
+    // Extensions.GetOutputDirectory hardcodes bin/<configuration> and cannot be used here
+    AbsolutePath TestOutputDirectory(Project project) =>
+        project.Directory / "bin" / project.Name / Configuration;
+
+    // The results directory also keeps TestResult.xml and the NUnit agent logs out of the repository root
+    void RunTests(Project project) =>
+        NUnit3(s => s
+            .SetInputFiles(TestOutputDirectory(project) / $"{project.Name}.dll")
+            .SetWorkPath(TestResultsDirectory)
+            .SetResults($"{project.Name}.xml"));
 
     // Gradle writes warnings to stderr, and the default logger reports stderr as build errors
     // ReSharper disable once TemplateIsNotCompileTimeConstantProblem

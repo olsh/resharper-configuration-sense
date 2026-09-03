@@ -1,0 +1,15 @@
+﻿using System.Configuration;
+
+namespace ConsoleApp
+{
+    public static class Program
+    {
+        public static void Main()
+        {
+            var value = ConfigurationManager.AppSettings[|"MissingSetting"|(0)];
+        }
+    }
+}
+
+---------------------------------------------------------
+(0): ReSharper Warning: App setting MissingSetting wasn't found in configuration files

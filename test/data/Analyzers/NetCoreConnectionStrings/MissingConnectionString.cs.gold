@@ -1,0 +1,15 @@
+﻿using Microsoft.Extensions.Configuration;
+
+namespace ConsoleApp
+{
+    public static class Program
+    {
+        public static void Main(IConfiguration configuration)
+        {
+            var value = configuration.GetConnectionString(|"MissingConnection"|(0));
+        }
+    }
+}
+
+---------------------------------------------------------
+(0): ReSharper Warning: Connection string MissingConnection wasn't found in configuration files

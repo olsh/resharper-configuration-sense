@@ -1,0 +1,13 @@
+﻿using System.Collections.Generic;
+
+namespace ConsoleApp
+{
+    public static class Program
+    {
+        public static void Main()
+        {
+            var dictionary = new Dictionary<string, string>();
+            var value = dictionary["MissingSetting"];
+        }
+    }
+}
