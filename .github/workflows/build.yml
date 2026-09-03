@@ -26,6 +26,9 @@ env:
 
 jobs:
   build:
+    # This name is master's required status check, so Dependabot auto-merge waits for a
+    # green build instead of merging straight away. Renaming the job without updating the
+    # branch protection rule blocks every pull request, because the check never reports.
     name: Build and test
     runs-on: windows-2025
 
