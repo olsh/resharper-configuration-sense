@@ -30,6 +30,7 @@
         "PublishReSharperPlugin",
         "PublishRiderPlugin",
         "Restore",
+        "RunIde",
         "Test"
       ]
     },
@@ -110,6 +111,10 @@
         "MarketplaceToken": {
           "type": "string",
           "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "RunIdeSolution": {
+          "type": "string",
+          "description": "Solution to open in the sandboxed IDE"
         },
         "Solution": {
           "type": "string",

@@ -270,6 +270,9 @@ build/tmp/
 # Test data
 /test/data/NuGetLocks/
 
+# Scratch solutions for trying the plugin by hand, see AGENTS.md
+/test/data/manual/
+
 # Test results
 /test/results/
 
