@@ -7,10 +7,12 @@
   <vendor url="https://github.com/olsh/resharper-configuration-sense">Oleg Shevchenko</vendor>
   <idea-version since-build="" until-build=""/>
   <resource-bundle>messages.ConfigurationSenseBundle</resource-bundle>
-  <extensions defaultExtensionNs="com.intellij" >
-    <!-- StringCollectionEditViewModel is not supported in Rider at the moment, so we can't enable this -->
-    <!--https://jetbrains.slack.com/archives/CBZ36NH7C/p1618820321116500-->
-    <!-- <applicationConfigurable groupId="language" instance="com.jetbrains.rider.settings.ConfigurationSensePluginOptionsPage" id="ConfigurationSense" /> -->
+  <extensions defaultExtensionNs="com.intellij">
+    <projectConfigurable groupId="language"
+                         id="preferences.configurationSense"
+                         instance="com.jetbrains.rider.settings.ConfigurationSensePluginOptionsPage"
+                         bundle="messages.ConfigurationSenseBundle"
+                         key="configurable.name.configurationsense.title"/>
   </extensions>
   <depends>com.intellij.modules.rider</depends>
 </idea-plugin>
