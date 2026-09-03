@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for coding agents working in this repository. `CLAUDE.md` is a symlink to this file, so Claude Code picks it up under the name it looks for.
 
 ## Project Overview
 
@@ -11,22 +11,22 @@ Configuration Sense is a JetBrains plugin (ReSharper + Rider) that provides auto
 Nuke (`build/Build.cs`) orchestrates the build; `build.cmd` bootstraps it.
 
 **Full build (both packages):**
-```
+```sh
 ./build.cmd pack-resharper pack-rider --configuration Release
 ```
 
 **Quick compile check:**
-```
+```sh
 dotnet build Resharper.ConfigurationSense.slnx
 ```
 
 **Build the Nuke project itself:**
-```
+```sh
 dotnet build build/_build.csproj
 ```
 
 **Run the tests (both SDK flavours):**
-```
+```sh
 ./build.cmd test --configuration Release
 ```
 
