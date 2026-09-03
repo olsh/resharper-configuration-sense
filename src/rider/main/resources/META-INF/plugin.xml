@@ -1,8 +1,42 @@
 <idea-plugin require-restart="true">
   <id>com.intellij.resharper.ConfigurationSense</id>
   <name>Configuration Sense</name>
-  <description>This extension provides autocomplete and validation for App settings and Connection strings.</description>
-  <change-notes>https://github.com/olsh/resharper-configuration-sense/releases</change-notes>
+  <description><![CDATA[
+    Autocomplete and validation for App settings and Connection strings in .NET projects.
+
+    <p>
+      Completion is offered inside <b>ConfigurationManager.AppSettings</b>,
+      <b>ConfigurationManager.ConnectionStrings</b>, the <b>IConfiguration</b> indexer and the
+      <b>GetSection</b>, <b>GetValue</b> and <b>GetConnectionString</b> calls of
+      <b>Microsoft.Extensions.Configuration</b>. A key that no configuration file defines is
+      reported as a warning at the same call sites, so a typo is caught in the editor rather than
+      at run time.
+    </p>
+
+    <p>Settings are read from:</p>
+    <ul>
+      <li><b>app.config</b> and <b>web.config</b>, following <b>configSource</b> attributes out to external files</li>
+      <li><b>appsettings.json</b>, flattened to colon-separated paths such as Logging:LogLevel:Default</li>
+      <li>User secrets, resolved through the project's <b>UserSecretsId</b></li>
+      <li>Transforms and other dependent files, such as web.Release.config and appsettings.Development.json</li>
+    </ul>
+
+    <p>
+      A configuration file under a different name is picked up once it is registered on the
+      <b>Configuration Sense</b> settings page, under <b>Languages &amp; Frameworks</b> in Rider and
+      under <b>Environment</b> in ReSharper. Only <b>.json</b> and <b>.xml</b> files can be added.
+    </p>
+
+    <p>The plugin analyzes C# only.</p>
+
+    <p>
+      For more information visit the
+      <a href="https://github.com/olsh/resharper-configuration-sense#readme">project repository</a>.
+    </p>
+  ]]></description>
+  <change-notes><![CDATA[
+    See the <a href="https://github.com/olsh/resharper-configuration-sense/releases">release notes on GitHub</a>.
+  ]]></change-notes>
   <version></version>
   <vendor url="https://github.com/olsh/resharper-configuration-sense">Oleg Shevchenko</vendor>
   <idea-version since-build="" until-build=""/>
@@ -10,9 +44,19 @@
   <extensions defaultExtensionNs="com.intellij">
     <projectConfigurable groupId="language"
                          id="preferences.configurationSense"
+                         nonDefaultProject="true"
                          instance="com.jetbrains.rider.settings.ConfigurationSensePluginOptionsPage"
                          bundle="messages.ConfigurationSenseBundle"
                          key="configurable.name.configurationsense.title"/>
+
+    <dependencySupport kind="dotnet" coordinate="System.Configuration.ConfigurationManager"
+                       displayName="System.Configuration.ConfigurationManager"/>
+    <dependencySupport kind="dotnet" coordinate="Microsoft.Extensions.Configuration"
+                       displayName="Microsoft.Extensions.Configuration"/>
+    <dependencySupport kind="dotnet" coordinate="Microsoft.Extensions.Configuration.Abstractions"
+                       displayName="Microsoft.Extensions.Configuration"/>
+    <dependencySupport kind="dotnet" coordinate="Microsoft.Extensions.Configuration.Binder"
+                       displayName="Microsoft.Extensions.Configuration"/>
   </extensions>
   <depends>com.intellij.modules.rider</depends>
 </idea-plugin>

@@ -44,9 +44,8 @@ dependencies {
 }
 
 intellijPlatform {
-    pluginConfiguration {
-        name = rootProject.name
-    }
+    // No pluginConfiguration block on purpose: setting `name` there overwrites the <name> from
+    // plugin.xml with rootProject.name, which is the slug rather than the display name
     publishing {
         token    = providers.environmentVariable('PUBLISH_TOKEN')
         channels = [PluginChannel]
