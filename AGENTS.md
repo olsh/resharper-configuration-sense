@@ -98,11 +98,22 @@ Both target `net472` and rely on SDK-style implicit globbing, so **a new `.cs` f
 
 ### Additional configuration files setting
 
-`Settings/ConfigurationSenseSettings` exposes a single `IIndexedEntry<string, string>` keyed by solution id; the value is a JSON-serialized `HashSet<string>` of project-file persistent ids (`OptionsExtensions` handles (de)serialization and resets the entry on parse failure). The ReSharper options page (`Settings/OptionsPage.cs`) edits it with a `StringCollectionEditViewModel`, filtered to JSON/XML project files.
+`Settings/ConfigurationSenseSettings` exposes a single `IIndexedEntry<string, string>` keyed by solution id; the value is a JSON-serialized `HashSet<string>` of project-file persistent ids (`OptionsExtensions` handles (de)serialization and resets the entry on parse failure). The options page (`Settings/OptionsPage.cs`) edits it as a Be list, filtered to JSON/XML project files, and writes the whole set back in `OnOk()` - so Cancel discards edits.
+
+The Add button is a native file dialog seeded at the solution directory, not a solution-tree browser: no Be control browses the project model, so the picked path is mapped back onto it the way the SDK's own `OptionsTableConfiguration.LoadFilesAndDirsToolbar` does (`ParseVirtualPathSafe` -> `FindProjectItemsByLocation` -> `GetPersistentID`).
 
 ### Rider frontend
 
-`src/rider/main/kotlin/` contains a `SimpleOptionsPage` subclass, but **it is not registered** - the `applicationConfigurable` entry in `plugin.xml` is commented out because `StringCollectionEditViewModel` isn't supported in Rider. So the Kotlin side is currently inert scaffolding; the Rider plugin is effectively just the backend `.dll`, copied into `<plugin>/dotnet` by Gradle's `prepareSandbox` (which fails the build if the dll/pdb is missing). It still has to compile, though: `SimpleOptionsPage` lives in the `intellij.rider.rdclient.dotnet` bundled module, which `build.gradle` declares explicitly - without that `bundledModule` line `compileKotlin` fails with an unresolved reference. The platform stopped exposing it from the main jars somewhere between 253 and 262, so it is easy to trip over on an SDK bump.
+The options page is shared with ReSharper - there is no Rider-specific UI code. `ConfigurationSenseOptionsPage` derives from `JetBrains.IDE.UI.Options.BeSimpleOptionsPage`, so its whole UI is a `BeControl` tree, and Rider's `BeSimpleOptionPageConverter` ships it across the protocol as one `BeSimpleOptionsPageContent`. **Be controls are what make a page cross-IDE**; the WPF automation view models (`StringCollectionEditViewModel` and friends) have no Rider view and render as nothing, which is why this page was Rider-only scaffolding until the port.
+
+`src/rider/main/kotlin/` therefore holds only a host: a `SimpleOptionsPage` subclass registered as a `projectConfigurable` in `plugin.xml` (`projectConfigurable`, not `applicationConfigurable`, because the feature is solution-scoped - that is also how JetBrains registers its own solution-scoped backend pages). Two ids are in play and they are **not** interchangeable:
+
+- the ctor's `pageId` must equal the C# `[OptionsPage]` id **verbatim** (`"Configuration Sense"`, space included) - it is passed straight to `SettingsViewModelHost.requestPage` with no normalization, so a mismatch silently resolves to an empty page;
+- `getId()` / the XML `id=` attribute is the IntelliJ configurable id (`preferences.configurationSense`), a separate namespace.
+
+Everything else is the backend `.dll`, copied into `<plugin>/dotnet` by Gradle's `prepareSandbox` (which fails the build if the dll/pdb is missing). The Kotlin still has to compile: `SimpleOptionsPage` lives in the `intellij.rider.rdclient.dotnet` bundled module, which `build.gradle` declares explicitly - without that `bundledModule` line `compileKotlin` fails with an unresolved reference. The platform stopped exposing it from the main jars somewhere between 253 and 262, so it is easy to trip over on an SDK bump.
+
+Handy check that the wiring survived a change: `buildPlugin` runs `buildSearchableOptions`, which launches Rider headlessly and renders the page. If `lib/*-searchableOptions.jar` contains hit text from the C# page, the whole backend -> protocol -> frontend chain resolved; if the page fails to resolve, that text is missing.
 
 Rider-specific quirk worth knowing: since 2019.1 the Rider backend has no PSI for JSON files, so `ParseJsonProjectFile` falls back to reading document text through `DocumentsOnProjectFiles` when `GetPrimaryPsiFile()` returns null. Keep that fallback when touching JSON reading.
 
@@ -151,6 +162,41 @@ directly and swallows every exception, so it is inert in tests) and the **additi
 files setting** (the stored value is a project file's runtime persistent ID).
 
 Run `build.cmd test` before submitting.
+
+## Manual testing
+
+The options page and the analyzers are checked by hand against a real solution. `test/data/manual/`
+is gitignored scratch space for that (structured-logging keeps a `test/manual/` for the same
+purpose) - put any .NET solution there, or anywhere else, and open it in a sandboxed Rider with the
+plugin installed:
+
+```sh
+./build.cmd RunIde --configuration Debug --run-ide-solution test/data/manual/YourSolution.slnx
+```
+
+`RunIde` depends on `Compile` and derives the same `-P` properties as `PackRider`, so it cannot pick
+up the `_PLACEHOLDER_` values a bare `./gradlew runIde` would. `--run-ide-solution` is optional and
+is forwarded to the IDE as a command-line argument; without it Rider starts with no solution open.
+Pass `--configuration Debug` unless you specifically want a Release backend - the Nuke default is
+`Release`. The target blocks until the IDE is closed, and unlike the pack targets it logs Gradle
+output at Information level so the sandboxed IDE's console stays visible.
+
+A solution is worth keeping around with two projects, one per dispatch path (`ConfigurationManager`
+and `IConfiguration`), each holding a config file the plugin *ignores* by default - something not
+named `app.config`, `web.config` or `appsettings.json`. Those exercise the additional-configuration-
+files setting: their keys stay highlighted until the file is registered on the options page.
+
+Anything placed under `test/data/` needs two stubs next to it, because MSBuild and NuGet both walk
+up the tree - and since the directory is gitignored, these do not survive a fresh clone:
+
+- `Directory.Build.props`, an empty `<Project/>`, so the repository's own props (`SdkVersion` and
+  friends) do not apply to a solution that has nothing to do with building the plugin;
+- `nuget.config` re-adding `https://api.nuget.org/v3/index.json` after a `<clear/>`. `test/data/nuget.config`
+  exists for the `[TestPackages]` restore and clears the source list down to two **HTTP** feeds;
+  inheriting those fails any modern restore with `NU1302: NuGet requires HTTPS sources`.
+
+structured-logging sidesteps both by keeping its scratch solutions in `test/manual/`, outside
+`test/data/` - worth considering if these stubs ever drift.
 
 ## Conventions
 

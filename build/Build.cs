@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -59,6 +59,9 @@ class Build : NukeBuild
     [Parameter] readonly string Configuration = "Release";
 
     [Parameter] [Secret] readonly string MarketplaceToken;
+
+    [Parameter("Solution to open in the sandboxed IDE")]
+    readonly AbsolutePath RunIdeSolution;
 
     [Solution(GenerateProjects = true)] readonly Solution Solution;
 
@@ -193,6 +196,23 @@ class Build : NukeBuild
                 logger: GradleLogger);
         });
 
+    // Launches a sandboxed Rider with the plugin installed, for trying the options page and the
+    // analyzers by hand - neither has automated coverage. Blocks until the IDE is closed.
+    Target RunIde => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            var arguments =
+                @$"runIde -PPluginVersion={ExtensionVersion} -PProductVersion={RiderProductVersion} -PDotNetOutputDirectory={Solution.Resharper_ConfigurationSense_Rider.GetOutputDirectory(Configuration)} -PDotNetProjectName={Solution.Resharper_ConfigurationSense_Rider.Name}";
+
+            if (RunIdeSolution != null)
+            {
+                arguments += @$" -PRunIdeSolution={RunIdeSolution}";
+            }
+
+            Gradle(arguments, logger: RunIdeLogger);
+        });
+
     // Both test projects share test/src, so each one writes to bin/<project>/<configuration>.
     // Extensions.GetOutputDirectory hardcodes bin/<configuration> and cannot be used here
     AbsolutePath TestOutputDirectory(Project project) =>
@@ -208,6 +228,10 @@ class Build : NukeBuild
     // Gradle writes warnings to stderr, and the default logger reports stderr as build errors
     // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
     static void GradleLogger(OutputType type, string text) => Log.Debug(text);
+
+    // Same stderr problem, but the whole point of RunIde is watching the IDE, so keep it visible
+    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+    static void RunIdeLogger(OutputType type, string text) => Log.Information(text);
 
     // Replaces AppVeyor's UpdateBuildVersion, which used to display the extension version on the
     // build page. GitHub Actions evaluates run-name before any step runs, so the version cannot go

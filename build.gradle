@@ -75,6 +75,12 @@ prepareSandbox {
     }
 }
 
+runIde {
+    if (project.hasProperty('RunIdeSolution')) {
+        argumentProviders.add({ [project.property('RunIdeSolution').toString()] } as CommandLineArgumentProvider)
+    }
+}
+
 wrapper {
     gradleVersion    = '9.7.1'
     distributionType = Wrapper.DistributionType.ALL
