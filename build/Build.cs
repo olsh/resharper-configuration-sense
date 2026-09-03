@@ -13,6 +13,7 @@ using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.NUnit;
 using Nuke.Common.Tools.NuGet;
+using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
 
 using Serilog;
@@ -60,8 +61,7 @@ class Build : NukeBuild
 
     [Parameter] [Secret] readonly string MarketplaceToken;
 
-    [Parameter("Solution to open in the sandboxed IDE")]
-    readonly AbsolutePath RunIdeSolution;
+    [Parameter("Solution to open in the sandboxed IDE")] readonly AbsolutePath RunIdeSolution;
 
     [Solution(GenerateProjects = true)] readonly Solution Solution;
 
@@ -149,6 +149,9 @@ class Build : NukeBuild
                 .SetBasePath(Solution.Resharper_ConfigurationSense.GetOutputDirectory(Configuration))
                 .AddProperty("project", Solution.Resharper_ConfigurationSense.Name)
                 .AddProperty("waveVersion", WaveVersionsRange)
+                // The base path is the compiled output directory, so the logo is passed as an
+                // absolute path rather than resolved relative to it
+                .AddProperty("logoPath", RootDirectory / "images" / "logo.png")
                 .SetOutputDirectory(RootDirectory));
 
             PublishExtensionVersion();
@@ -202,12 +205,20 @@ class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
+            // The pack targets hand Gradle one interpolated string, so NUKE's argument handler sees
+            // the holes and quotes any that contain spaces. This one is assembled in pieces because
+            // the solution is optional, which leaves the paths to be quoted here instead
+            var outputDirectory = Solution.Resharper_ConfigurationSense_Rider
+                .GetOutputDirectory(Configuration)
+                .ToString()
+                .DoubleQuoteIfNeeded();
+
             var arguments =
-                @$"runIde -PPluginVersion={ExtensionVersion} -PProductVersion={RiderProductVersion} -PDotNetOutputDirectory={Solution.Resharper_ConfigurationSense_Rider.GetOutputDirectory(Configuration)} -PDotNetProjectName={Solution.Resharper_ConfigurationSense_Rider.Name}";
+                @$"runIde -PPluginVersion={ExtensionVersion} -PProductVersion={RiderProductVersion} -PDotNetOutputDirectory={outputDirectory} -PDotNetProjectName={Solution.Resharper_ConfigurationSense_Rider.Name}";
 
             if (RunIdeSolution != null)
             {
-                arguments += @$" -PRunIdeSolution={RunIdeSolution}";
+                arguments += @$" -PRunIdeSolution={RunIdeSolution.ToString().DoubleQuoteIfNeeded()}";
             }
 
             Gradle(arguments, logger: RunIdeLogger);

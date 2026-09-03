@@ -8,10 +8,10 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <license type="expression">MIT</license>
         <projectUrl>https://github.com/olsh/resharper-configuration-sense</projectUrl>
-        <iconUrl>https://raw.githubusercontent.com/olsh/resharper-configuration-sense/master/images/logo.png</iconUrl>
-        <description>Provides autocomplete and validation for App settings and Connections strings</description>
+        <icon>logo.png</icon>
+        <description>Autocomplete and validation for App settings and Connection strings in .NET projects. Completion is offered inside ConfigurationManager.AppSettings, ConfigurationManager.ConnectionStrings, the IConfiguration indexer and the GetSection, GetValue and GetConnectionString calls of Microsoft.Extensions.Configuration. A key that no configuration file defines is reported as a warning at the same call sites, so a typo is caught in the editor rather than at run time. Settings are read from app.config and web.config, following configSource attributes out to external files; from appsettings.json, flattened to colon-separated paths such as Logging:LogLevel:Default; from user secrets, resolved through the project's UserSecretsId; and from transforms and other dependent files such as web.Release.config and appsettings.Development.json. A configuration file under a different name is picked up once it is registered on the Configuration Sense settings page, under Environment in ReSharper. Only .json and .xml files can be added. The plugin analyzes C# only.</description>
         <releaseNotes>https://github.com/olsh/resharper-configuration-sense/releases</releaseNotes>
-        <tags>resharper configuration autocomplete intellisense validation netcore</tags>
+        <tags>resharper rider configuration appsettings connectionstrings usersecrets autocomplete intellisense validation dotnet netcore</tags>
         <dependencies>
             <dependency id="Wave" version="$waveVersion$" />
         </dependencies>
@@ -20,5 +20,6 @@
     <files>
         <file src="$project$.dll" target="dotFiles" />
         <file src="$project$.pdb" target="dotFiles" />
+        <file src="$logoPath$" target="" />
     </files>
 </package>
