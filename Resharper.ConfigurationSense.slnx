@@ -2,7 +2,8 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".github/dependabot.yml" />
-    <File Path="appveyor.yml" />
+    <File Path=".github/workflows/build.yml" />
+    <File Path=".github/workflows/dependabot-auto-merge.yml" />
     <File Path="build.gradle" />
     <File Path="Directory.Build.props" />
     <File Path="README.md" />
