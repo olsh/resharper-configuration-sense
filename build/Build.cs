@@ -1,20 +1,23 @@
+using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using DefaultNamespace;
 
 using Nuke.Common;
 using Nuke.Common.CI;
-using Nuke.Common.CI.AppVeyor;
+using Nuke.Common.CI.GitHubActions;
+using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.NuGet;
-using Nuke.Common.Tools.SonarScanner;
+using Nuke.Common.Utilities.Collections;
 
 using Serilog;
 
+using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
-using static Nuke.Common.Tools.SonarScanner.SonarScannerTasks;
 using static Nuke.Common.Tools.NuGet.NuGetTasks;
 
 [ShutdownDotNetAfterServerBuild]
@@ -31,10 +34,15 @@ class Build : NukeBuild
 
         var versionMatch = Regex.Match(SdkVersion, @"(?<version>[\d\.]+)(?<suffix>-.*)?");
 
-        SdkVersionWithoutSuffix = versionMatch.Groups["version"].ToString();
-        SdkVersionSuffix = versionMatch.Groups["suffix"].ToString();
+        SdkVersionWithoutSuffix = versionMatch.Groups["version"]
+            .ToString();
+        SdkVersionSuffix = versionMatch.Groups["suffix"]
+            .ToString();
 
-        ExtensionVersion = AppVeyor == null ? SdkVersion : $"{SdkVersion}.{AppVeyor.BuildNumber}";
+        // The run number goes before the suffix, so that an EAP build stays a valid prerelease
+        ExtensionVersion = GitHubActions == null
+            ? SdkVersion
+            : $"{SdkVersionWithoutSuffix}.{GitHubActions.RunNumber}{SdkVersionSuffix}";
         var sdkMatch = Regex.Match(SdkVersion, @"\d{2}(\d{2}).(\d).*");
         WaveMajorVersion = int.Parse(sdkMatch.Groups[1]
             .Value + sdkMatch.Groups[2]
@@ -44,15 +52,17 @@ class Build : NukeBuild
         base.OnBuildInitialized();
     }
 
-    [CI] readonly AppVeyor AppVeyor;
+    [CI] readonly GitHubActions GitHubActions;
 
     [Parameter] readonly string Configuration = "Release";
 
-    [Parameter("SonarQube API key", Name = "sonar:apikey")] readonly string SonarQubeApiKey;
+    [Parameter] [Secret] readonly string MarketplaceToken;
 
     [Solution(GenerateProjects = true)] readonly Solution Solution;
 
     [LocalPath("./gradlew.bat")] readonly Tool Gradle;
+
+    bool ExtensionVersionReported;
 
     string ExtensionVersion { get; set; }
 
@@ -66,13 +76,27 @@ class Build : NukeBuild
 
     int WaveMajorVersion { get; set; }
 
-    Target UpdateBuildVersion => _ => _
-        .Requires(() => AppVeyor)
-        .Before(Restore)
-        .Executes(() =>
+    AbsolutePath ReSharperPackagePath =>
+        RootDirectory / $"{Solution.Resharper_ConfigurationSense.Name}.{ExtensionVersion}.nupkg";
+
+    // JetBrains is not very consistent in versioning
+    // https://github.com/olsh/resharper-structured-logging/issues/35#issuecomment-892764206
+    string RiderProductVersion
+    {
+        get
         {
-            AppVeyor.Instance.UpdateBuildVersion(ExtensionVersion);
-        });
+            var productVersion = SdkVersionWithoutSuffix.TrimEnd('.', '0');
+            if (!string.IsNullOrEmpty(SdkVersionSuffix))
+            {
+                productVersion += $"{SdkVersionSuffix.Replace("0", string.Empty).ToUpper()}-SNAPSHOT";
+            }
+
+            return productVersion;
+        }
+    }
+
+    // EAP builds must not reach the stable channel of the Marketplace
+    string PluginChannel => string.IsNullOrEmpty(SdkVersionSuffix) ? "default" : "eap";
 
     Target Restore => _ => _
         .Executes(() =>
@@ -105,74 +129,81 @@ class Build : NukeBuild
                 .AddProperty("project", Solution.Resharper_ConfigurationSense.Name)
                 .AddProperty("waveVersion", WaveVersionsRange)
                 .SetOutputDirectory(RootDirectory));
+
+            PublishExtensionVersion();
         });
 
     Target PackRider => _ => _
         .DependsOn(Compile)
         .Executes(() =>
         {
-            // JetBrains is not very consistent in versioning
-            // https://github.com/olsh/resharper-structured-logging/issues/35#issuecomment-892764206
-            var productVersion = SdkVersionWithoutSuffix.TrimEnd('.', '0');
-            if (!string.IsNullOrEmpty(SdkVersionSuffix))
-            {
-                productVersion += $"{SdkVersionSuffix.Replace("0", string.Empty).ToUpper()}-SNAPSHOT";
-            }
+            // Each interpolation hole has to stay space-free: NUKE quotes any hole that contains
+            // spaces, which would collapse the properties into a single argument
+            Gradle(
+                @$"buildPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={RiderProductVersion} -PDotNetOutputDirectory={Solution.Resharper_ConfigurationSense_Rider.GetOutputDirectory(Configuration)} -PDotNetProjectName={Solution.Resharper_ConfigurationSense_Rider.Name}",
+                logger: GradleLogger);
 
-            Gradle(@$"buildPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={productVersion} -PDotNetOutputDirectory={Solution.Resharper_ConfigurationSense_Rider.GetOutputDirectory(Configuration)} -PDotNetProjectName={Solution.Resharper_ConfigurationSense_Rider.Name}",
-                logger:
-                (_, s) =>
-                {
-                    // Gradle writes warnings to stderr
-                    // By default logger will write stderr as errors
-                    // AppVeyor writes errors as special messages and stops the build if such messages more than 500
-                    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
-                    Log.Debug(s);
-                });
+            PublishExtensionVersion();
         });
 
-    Target SonarBegin => _ => _
-        .Unlisted()
-        .Before(Compile)
+    Target PublishReSharperPlugin => _ => _
+        .DependsOn(PackResharper)
+        .Requires(() => MarketplaceToken)
         .Executes(() =>
         {
-            SonarScannerBegin(s =>
-            {
-                s = s
-                    .SetServer("https://sonarcloud.io")
-                    .SetFramework("net5.0")
-                    .SetLogin(SonarQubeApiKey)
-                    .SetProjectKey("resharper-configuration-sense")
-                    .SetName("R# Configuration Sense")
-                    .SetOrganization("olsh")
-                    .SetVersion("1.0.0.0");
-
-                if (AppVeyor != null)
-                {
-                    if (AppVeyor.PullRequestNumber != null)
-                    {
-                        s = s
-                            .SetPullRequestKey(AppVeyor.PullRequestNumber.ToString())
-                            .SetPullRequestBase(AppVeyor.RepositoryBranch)
-                            .SetPullRequestBranch(AppVeyor.PullRequestHeadRepositoryBranch);
-                    }
-                    else
-                    {
-                        s = s
-                            .SetBranchName(AppVeyor.RepositoryBranch);
-                    }
-                }
-
-                return s;
-            });
+            NuGetPush(s => s
+                .SetTargetPath(ReSharperPackagePath)
+                .SetSource("https://plugins.jetbrains.com/")
+                .SetApiKey(MarketplaceToken));
         });
 
-    Target SonarEnd => _ => _
-        .DependsOn(SonarBegin, Compile)
+    Target PublishRiderPlugin => _ => _
+        .DependsOn(PackRider)
+        .Requires(() => MarketplaceToken)
         .Executes(() =>
         {
-            SonarScannerEnd(s => s
-                .SetLogin(SonarQubeApiKey)
-                .SetFramework("net5.0"));
+            // NUKE logs tool arguments, so the token travels through the environment instead
+            // Seeding from Variables is required because this replaces the child process environment
+            var environmentVariables = new Dictionary<string, string>(Variables, StringComparer.OrdinalIgnoreCase)
+            {
+                ["PUBLISH_TOKEN"] = MarketplaceToken,
+            };
+
+            Gradle(
+                @$"publishPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={RiderProductVersion} -PDotNetOutputDirectory={Solution.Resharper_ConfigurationSense_Rider.GetOutputDirectory(Configuration)} -PDotNetProjectName={Solution.Resharper_ConfigurationSense_Rider.Name} -PPluginChannel={PluginChannel}",
+                environmentVariables: environmentVariables,
+                logger: GradleLogger);
         });
+
+    // Gradle writes warnings to stderr, and the default logger reports stderr as build errors
+    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+    static void GradleLogger(OutputType type, string text) => Log.Debug(text);
+
+    // Replaces AppVeyor's UpdateBuildVersion, which used to display the extension version on the
+    // build page. GitHub Actions evaluates run-name before any step runs, so the version cannot go
+    // there; it goes to the job summary instead, and to the workflow environment so that the upload
+    // steps can name the artifacts after it.
+    void PublishExtensionVersion()
+    {
+        ReportSummary(_ => _.AddPair("Version", ExtensionVersion));
+
+        if (GitHubActions == null)
+        {
+            return;
+        }
+
+        var environmentFile = (AbsolutePath)GetVariable("GITHUB_ENV");
+        environmentFile?.AppendAllLines(new[] { $"EXTENSION_VERSION={ExtensionVersion}" });
+
+        // Both pack targets call this, and a publish run packs a second time, but the version is
+        // the same. The variable exported above is visible to every later step of the same job, and
+        // the flag covers the two calls within this one, so between them the heading is written once
+        if (ExtensionVersionReported || GetVariable("EXTENSION_VERSION") != null)
+        {
+            return;
+        }
+
+        ExtensionVersionReported = true;
+        GitHubActions.StepSummaryFile?.AppendAllLines(new[] { $"### Version `{ExtensionVersion}`" });
+    }
 }

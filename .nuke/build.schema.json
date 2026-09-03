@@ -27,10 +27,9 @@
         "Compile",
         "PackResharper",
         "PackRider",
-        "Restore",
-        "SonarBegin",
-        "SonarEnd",
-        "UpdateBuildVersion"
+        "PublishReSharperPlugin",
+        "PublishRiderPlugin",
+        "Restore"
       ]
     },
     "Verbosity": {
@@ -107,13 +106,13 @@
         "Configuration": {
           "type": "string"
         },
+        "MarketplaceToken": {
+          "type": "string",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded"
-        },
-        "sonar:apikey": {
-          "type": "string",
-          "description": "SonarQube API key"
         }
       }
     },
