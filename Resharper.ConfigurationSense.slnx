@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".github/dependabot.yml" />
+    <File Path="appveyor.yml" />
+    <File Path="build.gradle" />
+    <File Path="Directory.Build.props" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="build/_build.csproj">
+    <Build Project="false" />
+  </Project>
+  <Project Path="src/Resharper.ConfigurationSense/Resharper.ConfigurationSense.csproj" />
+  <Project Path="src/Resharper.ConfigurationSense/Resharper.ConfigurationSense.Rider.csproj" />
+</Solution>
