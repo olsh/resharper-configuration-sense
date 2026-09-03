@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 
+using static Resharper.ConfigurationSense.Tests.Constants.ConfigurationFiles;
+
 namespace Resharper.ConfigurationSense.Tests.Completion
 {
     // A key declared in both configuration files produces one item carrying both values
@@ -8,6 +10,6 @@ namespace Resharper.ConfigurationSense.Tests.Completion
         protected override string SubPath => "MergedXmlSettings";
 
         [Test]
-        public void TestMergedValues() => DoNamedTest2("app.config", "web.config");
+        public void TestMergedValues() => DoNamedTest2(AppConfig, WebConfig);
     }
 }

@@ -81,7 +81,7 @@ class Build : NukeBuild
     AbsolutePath ReSharperPackagePath =>
         RootDirectory / $"{Solution.Resharper_ConfigurationSense.Name}.{ExtensionVersion}.nupkg";
 
-    AbsolutePath TestResultsDirectory => RootDirectory / "test" / "results";
+    static AbsolutePath TestResultsDirectory => RootDirectory / "test" / "results";
 
     // JetBrains is not very consistent in versioning
     // https://github.com/olsh/resharper-structured-logging/issues/35#issuecomment-892764206

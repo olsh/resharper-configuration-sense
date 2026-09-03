@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 
+using static Resharper.ConfigurationSense.Tests.Constants.ConfigurationFiles;
+
 namespace Resharper.ConfigurationSense.Tests.Analyzers
 {
     public class NetCoreGetSectionAnalyzerTests : SettingsAnalyzerTestBase
@@ -8,9 +10,9 @@ namespace Resharper.ConfigurationSense.Tests.Analyzers
 
         // Unlike the indexer, GetSection also offers the intermediate objects
         [Test]
-        public void TestExistingSection() => DoNamedTest2("appsettings.json");
+        public void TestExistingSection() => DoNamedTest2(AppSettingsJson);
 
         [Test]
-        public void TestMissingSection() => DoNamedTest2("appsettings.json");
+        public void TestMissingSection() => DoNamedTest2(AppSettingsJson);
     }
 }

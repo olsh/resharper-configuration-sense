@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 
+using static Resharper.ConfigurationSense.Tests.Constants.ConfigurationFiles;
+
 namespace Resharper.ConfigurationSense.Tests.Analyzers
 {
     public class NetCoreConnectionStringsAnalyzerTests : SettingsAnalyzerTestBase
@@ -8,9 +10,9 @@ namespace Resharper.ConfigurationSense.Tests.Analyzers
 
         // The ConnectionStrings: prefix is stripped before the keys are matched
         [Test]
-        public void TestExistingConnectionString() => DoNamedTest2("appsettings.json");
+        public void TestExistingConnectionString() => DoNamedTest2(AppSettingsJson);
 
         [Test]
-        public void TestMissingConnectionString() => DoNamedTest2("appsettings.json");
+        public void TestMissingConnectionString() => DoNamedTest2(AppSettingsJson);
     }
 }

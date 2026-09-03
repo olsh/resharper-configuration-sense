@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 
+using static Resharper.ConfigurationSense.Tests.Constants.ConfigurationFiles;
+
 namespace Resharper.ConfigurationSense.Tests.Analyzers
 {
     public class AppSettingsAnalyzerTests : SettingsAnalyzerTestBase
@@ -7,9 +9,9 @@ namespace Resharper.ConfigurationSense.Tests.Analyzers
         protected override string SubPath => "AppSettings";
 
         [Test]
-        public void TestExistingAppSetting() => DoNamedTest2("app.config");
+        public void TestExistingAppSetting() => DoNamedTest2(AppConfig);
 
         [Test]
-        public void TestMissingAppSetting() => DoNamedTest2("app.config");
+        public void TestMissingAppSetting() => DoNamedTest2(AppConfig);
     }
 }

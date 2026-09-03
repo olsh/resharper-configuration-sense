@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 
+using static Resharper.ConfigurationSense.Tests.Constants.ConfigurationFiles;
+
 namespace Resharper.ConfigurationSense.Tests.Completion
 {
     public class NetCoreConfigurationCompletionTests : SettingsCompletionTestBase
@@ -7,9 +9,9 @@ namespace Resharper.ConfigurationSense.Tests.Completion
         protected override string SubPath => "NetCoreConfiguration";
 
         [Test]
-        public void TestIndexerKey() => DoNamedTest2("appsettings.json");
+        public void TestIndexerKey() => DoNamedTest2(AppSettingsJson);
 
         [Test]
-        public void TestGetValueKey() => DoNamedTest2("appsettings.json");
+        public void TestGetValueKey() => DoNamedTest2(AppSettingsJson);
     }
 }

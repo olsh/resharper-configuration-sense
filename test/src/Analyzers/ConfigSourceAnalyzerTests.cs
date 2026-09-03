@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 
+using static Resharper.ConfigurationSense.Tests.Constants.ConfigurationFiles;
+
 namespace Resharper.ConfigurationSense.Tests.Analyzers
 {
     public class ConfigSourceAnalyzerTests : SettingsAnalyzerTestBase
@@ -7,9 +9,9 @@ namespace Resharper.ConfigurationSense.Tests.Analyzers
         protected override string SubPath => "ConfigSource";
 
         [Test]
-        public void TestSettingFromExternalConfigSource() => DoNamedTest2("web.config", "external.config");
+        public void TestSettingFromExternalConfigSource() => DoNamedTest2(WebConfig, "external.config");
 
         [Test]
-        public void TestMissingSettingWithExternalConfigSource() => DoNamedTest2("web.config", "external.config");
+        public void TestMissingSettingWithExternalConfigSource() => DoNamedTest2(WebConfig, "external.config");
     }
 }
