@@ -4,6 +4,7 @@
     <File Path=".github/dependabot.yml" />
     <File Path=".github/workflows/build.yml" />
     <File Path=".github/workflows/dependabot-auto-merge.yml" />
+    <File Path=".github/workflows/sdk-update.yml" />
     <File Path="build.gradle" />
     <File Path="Directory.Build.props" />
     <File Path="README.md" />

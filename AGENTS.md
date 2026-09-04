@@ -41,20 +41,29 @@ Default targets: `PackResharper`, `PackRider`.
 - **PackRider** - invokes `gradlew buildPlugin`, passing all Gradle properties on the command line; output goes to `gradle-build/distributions/*.zip`
 - **PublishReSharperPlugin** - `nuget push` of the packed `.nupkg` to `https://plugins.jetbrains.com/`
 - **PublishRiderPlugin** - `gradlew publishPlugin`; the Marketplace token goes through the `PUBLISH_TOKEN` environment variable rather than a `-P` property, because Nuke logs tool arguments
+- **UpdateSdkVersion** - adopts a newer JetBrains SDK in `Directory.Build.props`; see "Adopting a new SDK". Depends on nothing, so it neither restores nor compiles
 
-Both publish targets require `MarketplaceToken` and are only reached from a manually dispatched CI run. Sonar has no build target - analysis is server-side.
+Both publish targets require `MarketplaceToken`, and are reached either from a manually dispatched CI run or from an SDK bump landing on `master`. Sonar has no build target - analysis is server-side.
 
 Both pack targets call `PublishExtensionVersion()`, which reports the version to the Nuke summary and, under GitHub Actions, exports `EXTENSION_VERSION` to `$GITHUB_ENV` so the artifact upload steps can name the packages.
 
 ### Version derivation
 
-`SdkVersion` in the root `Directory.Build.props` is the single source of truth (e.g. `2026.2.1`). `Build.OnBuildInitialized` reads it off the solution and derives everything else from it:
+`SdkVersion` in the root `Directory.Build.props` is the single source of truth (e.g. `2026.2.1`). `Build.OnBuildInitialized` parses it straight out of that file with `XDocument` - deliberately not through `Solution.GetProperty`, because evaluating a `net472` project pulls in MSBuild and `UpdateSdkVersion` runs on a Linux runner - and derives everything else from it:
 
 - **Extension version** = `SdkVersion` locally; on GitHub Actions the run number is spliced in before any prerelease suffix, so `2025.1.0-eap02` becomes `2025.1.0.373-eap02`
 - **Wave version** for the nuspec dependency = digits pulled out of the SDK version by regex (`2026.2.x` produces `262.0`)
-- **Rider `ProductVersion`** = SDK version with trailing `.0` trimmed, plus a `-SNAPSHOT` suffix mangling for EAP versions
+- **Rider `ProductVersion`** = SDK version with a trailing `.0` dropped (`2025.1.0` is `2025.1` there, `2026.2.1` stays), plus `-EAP<n>-SNAPSHOT` for a prerelease. The suffix digits are re-parsed one number at a time, so `-eap10` does not collapse onto `-EAP1`
 
 Bumping the SDK therefore only requires editing `Directory.Build.props`.
+
+### Adopting a new SDK
+
+The `SDK update` workflow polls nuget.org daily and proposes the bump itself. `build.cmd UpdateSdkVersion` is what it runs: the target reads the versions published for all four SDK packages, keeps only those every one of them has, and picks a target under the wave policy. While the adopted version is stable only a higher wave qualifies, because a same-wave patch is already covered by the `Wave` dependency range the package declares; once it is a prerelease the whole train is followed, `eap01` through `rc01` to the stable release that closes the wave. `--sdk-version-override <version>` adopts a specific version instead, which is the way to take a same-wave patch.
+
+The workflow then commits the bump to `sdk-update/<version>`, opens a pull request with auto-merge enabled, and lets `Build and test` decide. Green merges to `master`, which publishes; red leaves the pull request open, which is the normal outcome for a wave change. Expect to fix binding redirects in `test/src/app.config`, `.gold` expectations, SDK API breaks, and sometimes `build.gradle` (the `bundledModule` line especially) and the Gradle wrapper. A stale red pull request is closed as superseded when the next version comes along.
+
+Opening that pull request needs the `AUTOMATION_TOKEN` repository secret, a fine-grained personal access token for this repository with read and write access to contents and pull requests. A pull request opened with the built-in `GITHUB_TOKEN` never triggers a workflow, so `Build and test` would never report and auto-merge would wait forever. To drive the flow without waiting for JetBrains, dispatch it with `-f sdk-version=<version>`.
 
 ### Toolchain constraints
 
@@ -206,7 +215,9 @@ structured-logging sidesteps both by keeping its scratch solutions in `test/manu
 
 GitHub Actions (`.github/workflows/build.yml`), `windows-2025`, .NET 10 and Temurin 21. On every push and pull request against `master` it runs `build.cmd Test --configuration Release`, then `build.cmd PackResharper PackRider --configuration Release`, and uploads the NUnit result files, the `.nupkg` and the Rider `.zip` as run artifacts; the two packages are named after `EXTENSION_VERSION`.
 
-A manual `workflow_dispatch` with `publish: true` additionally runs the two publish targets and then cuts a GitHub release tagged with the extension version (`--prerelease` when the version carries an EAP suffix). That path needs the `JETBRAINS_MARKETPLACE_TOKEN` repository secret; nothing else in the workflow needs a secret.
+Publishing runs the two publish targets and then cuts a GitHub release tagged with the extension version (`--prerelease` when the version carries an EAP suffix). The `Decide whether to publish` step turns it on for a manual `workflow_dispatch` with `publish: true`, and also for a push to `master` that changes `SdkVersion` in `Directory.Build.props` - which is how an SDK update ships itself. That comparison is why the checkout uses `fetch-depth: 0`, and why `cancel-in-progress` is narrowed to pull requests: a publishing push must not be cancelled half way through. The path needs the `JETBRAINS_MARKETPLACE_TOKEN` repository secret.
+
+`.github/workflows/sdk-update.yml` proposes those SDK bumps daily - see "Adopting a new SDK". It is the only thing in CI that needs `AUTOMATION_TOKEN`.
 
 SonarQube analysis is **server-side** - the scanner does not run in CI, and there is no Sonar target in the Nuke build.
 
