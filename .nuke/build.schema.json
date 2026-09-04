@@ -31,7 +31,8 @@
         "PublishRiderPlugin",
         "Restore",
         "RunIde",
-        "Test"
+        "Test",
+        "UpdateSdkVersion"
       ]
     },
     "Verbosity": {
@@ -115,6 +116,10 @@
         "RunIdeSolution": {
           "type": "string",
           "description": "Solution to open in the sandboxed IDE"
+        },
+        "SdkVersionOverride": {
+          "type": "string",
+          "description": "Adopt this SDK version instead of the one the wave policy picks"
         },
         "Solution": {
           "type": "string",

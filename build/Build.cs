@@ -1,8 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
 using DefaultNamespace;
+
+using NuGet.Versioning;
 
 using Nuke.Common;
 using Nuke.Common.CI;
@@ -30,12 +37,20 @@ class Build : NukeBuild
 
     protected override void OnBuildInitialized()
     {
-        // Since we use global package management for dependencies
-        // We just pick up the first solution
-        SdkVersion = Solution.Resharper_ConfigurationSense.GetProperty("SdkVersion");
+        // Read straight from the props file rather than through Solution.GetProperty: evaluating a
+        // net472 project pulls in MSBuild, and UpdateSdkVersion runs on a Linux runner
+        SdkVersion = XDocument
+            .Load((RootDirectory / "Directory.Build.props").ToString())
+            .Descendants()
+            .Single(x => x.Name.LocalName == "SdkVersion")
+            .Value;
         SdkVersion.NotNull("Unable to detect SDK version");
 
-        var versionMatch = Regex.Match(SdkVersion, @"(?<version>[\d\.]+)(?<suffix>-.*)?");
+        var versionMatch = Regex.Match(
+            SdkVersion,
+            @"(?<version>[\d\.]+)(?<suffix>-.*)?",
+            RegexOptions.None,
+            RegexTimeout);
 
         SdkVersionWithoutSuffix = versionMatch.Groups["version"]
             .ToString();
@@ -46,7 +61,7 @@ class Build : NukeBuild
         ExtensionVersion = GitHubActions == null
             ? SdkVersion
             : $"{SdkVersionWithoutSuffix}.{GitHubActions.RunNumber}{SdkVersionSuffix}";
-        var sdkMatch = Regex.Match(SdkVersion, @"\d{2}(\d{2}).(\d).*");
+        var sdkMatch = Regex.Match(SdkVersion, @"\d{2}(\d{2}).(\d).*", RegexOptions.None, RegexTimeout);
         WaveMajorVersion = int.Parse(sdkMatch.Groups[1]
             .Value + sdkMatch.Groups[2]
             .Value);
@@ -63,9 +78,25 @@ class Build : NukeBuild
 
     [Parameter("Solution to open in the sandboxed IDE")] readonly AbsolutePath RunIdeSolution;
 
+    [Parameter("Adopt this SDK version instead of the one the wave policy picks")] readonly string SdkVersionOverride;
+
     [Solution(GenerateProjects = true)] readonly Solution Solution;
 
     [LocalPath("./gradlew.bat")] readonly Tool Gradle;
+
+    // Every regex here runs over a version string of a couple of dozen characters, so the bound is
+    // only ever reached by a runaway
+    static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
+
+    // Every project pins its SDK package to $(SdkVersion), and JetBrains does not always push the
+    // four of them at the same minute, so a version counts as available only once all of them have it
+    static readonly string[] SdkPackageIds =
+    {
+        "jetbrains.resharper.sdk",
+        "jetbrains.rider.sdk",
+        "jetbrains.resharper.sdk.tests",
+        "jetbrains.rider.sdk.tests",
+    };
 
     bool ExtensionVersionReported;
 
@@ -92,10 +123,23 @@ class Build : NukeBuild
     {
         get
         {
-            var productVersion = SdkVersionWithoutSuffix.TrimEnd('.', '0');
+            // A zero patch is dropped, so 2025.1.0 is 2025.1 there, but 2026.2.1 stays as it is
+            var productVersion = SdkVersionWithoutSuffix.EndsWith(".0", StringComparison.Ordinal)
+                ? SdkVersionWithoutSuffix.Substring(0, SdkVersionWithoutSuffix.Length - ".0".Length)
+                : SdkVersionWithoutSuffix;
+
             if (!string.IsNullOrEmpty(SdkVersionSuffix))
             {
-                productVersion += $"{SdkVersionSuffix.Replace("0", string.Empty).ToUpper()}-SNAPSHOT";
+                // -eap01 is -EAP1 there. The leading zeros go one number at a time, so that -eap10
+                // does not collapse onto -EAP1
+                var suffix = Regex.Replace(
+                    SdkVersionSuffix,
+                    @"\d+",
+                    x => int.Parse(x.Value)
+                        .ToString(),
+                    RegexOptions.None,
+                    RegexTimeout);
+                productVersion += $"{suffix.ToUpperInvariant()}-SNAPSHOT";
             }
 
             return productVersion;
@@ -224,6 +268,94 @@ class Build : NukeBuild
             Gradle(arguments, logger: RunIdeLogger);
         });
 
+    Target UpdateSdkVersion => _ => _
+        .Executes(async () =>
+        {
+            var availableVersions = await GetPublishedSdkVersions();
+            var currentVersion = NuGetVersion.Parse(SdkVersion);
+
+            NuGetVersion targetVersion;
+            if (SdkVersionOverride != null)
+            {
+                var requestedVersion = NuGetVersion.Parse(SdkVersionOverride);
+                targetVersion = availableVersions
+                    .FirstOrDefault(x => x.Equals(requestedVersion))
+                    .NotNull($"{SdkVersionOverride} is not published for every JetBrains SDK package");
+            }
+            else
+            {
+                targetVersion = SelectSdkUpdate(currentVersion, availableVersions);
+            }
+
+            if (targetVersion == null || targetVersion.Equals(currentVersion))
+            {
+                Log.Information("The JetBrains SDK {Version} is up to date", SdkVersion);
+                PublishGitHubOutput("sdk-update-available", "false");
+
+                return;
+            }
+
+            var propsFile = RootDirectory / "Directory.Build.props";
+            // A regex rather than XDocument.Save, so that the MSBuild namespace declaration, the
+            // attribute order and the comment in the file all survive untouched
+            propsFile.WriteAllText(Regex.Replace(
+                propsFile.ReadAllText(),
+                "<SdkVersion>[^<]*</SdkVersion>",
+                $"<SdkVersion>{targetVersion}</SdkVersion>",
+                RegexOptions.None,
+                RegexTimeout));
+
+            Log.Information("Updated the JetBrains SDK from {Current} to {Target}", SdkVersion, targetVersion);
+            ReportSummary(_ => _.AddPair("SDK", $"{SdkVersion} -> {targetVersion}"));
+
+            PublishGitHubOutput("sdk-update-available", "true");
+            PublishGitHubOutput("sdk-version", targetVersion.ToString());
+            PublishGitHubOutput("previous-sdk-version", SdkVersion);
+        });
+
+    static async Task<IReadOnlyCollection<NuGetVersion>> GetPublishedSdkVersions()
+    {
+        using var client = new HttpClient();
+
+        HashSet<NuGetVersion> versions = null;
+        foreach (var packageId in SdkPackageIds)
+        {
+            var index = await client.GetStringAsync($"https://api.nuget.org/v3-flatcontainer/{packageId}/index.json");
+
+            using var document = JsonDocument.Parse(index);
+            var published = document.RootElement
+                .GetProperty("versions")
+                .EnumerateArray()
+                .Select(x => NuGetVersion.Parse(x.GetString()))
+                .ToList();
+
+            if (versions == null)
+            {
+                versions = new HashSet<NuGetVersion>(published, VersionComparer.Default);
+            }
+            else
+            {
+                versions.IntersectWith(published);
+            }
+        }
+
+        return versions;
+    }
+
+    // A same wave patch is already covered by the Wave dependency range the package declares, so it
+    // is not worth a release; the next wave is, and it shows up as an EAP first. Once the adopted
+    // version is a prerelease the whole train is followed instead: eap01 -> rc01 -> the stable release
+    static NuGetVersion SelectSdkUpdate(NuGetVersion currentVersion, IEnumerable<NuGetVersion> availableVersions)
+    {
+        return availableVersions
+            .Where(x => x > currentVersion)
+            .Where(x => currentVersion.IsPrerelease
+                        || x.Major > currentVersion.Major
+                        || (x.Major == currentVersion.Major && x.Minor > currentVersion.Minor))
+            .OrderBy(x => x)
+            .LastOrDefault();
+    }
+
     // Both test projects share test/src, so each one writes to bin/<project>/<configuration>.
     // Extensions.GetOutputDirectory hardcodes bin/<configuration> and cannot be used here
     AbsolutePath TestOutputDirectory(Project project) =>
@@ -270,5 +402,13 @@ class Build : NukeBuild
 
         ExtensionVersionReported = true;
         GitHubActions.StepSummaryFile?.AppendAllLines(new[] { $"### Version `{ExtensionVersion}`" });
+    }
+
+    // Hands a value to the later steps of the same job, which is how the SDK update workflow learns
+    // what UpdateSdkVersion decided. Outside of GitHub Actions there is nowhere to write it
+    static void PublishGitHubOutput(string name, string value)
+    {
+        var outputFile = (AbsolutePath)GetVariable("GITHUB_OUTPUT");
+        outputFile?.AppendAllLines(new[] { $"{name}={value}" });
     }
 }
