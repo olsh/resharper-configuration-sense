@@ -2,12 +2,13 @@
 Prefix: """
 Count: 1
 Focus: Hard
+Rules: [\w] => add_to_prefix
 Range: "var value = configuration.GetConnectionString("♦");"
                                                       ▲▲△
 
 ##### RELEVANCE SORT #####
 
-                            [FromSingleCompletion, FromLightAndDynamicEvaluation, PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
+                            [FromLightEvaluation, PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
 F̣irstConnection =  |Data Source=first    <==
 
 ##### ALPHABETIC SORT #####

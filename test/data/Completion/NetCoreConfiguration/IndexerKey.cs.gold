@@ -2,12 +2,13 @@
 Prefix: """
 Count: 3
 Focus: Hard
+Rules: [\w] => add_to_prefix
 Range: "var value = configuration["♦"];"
                                   ▲▲△
 
 ##### RELEVANCE SORT #####
 
-                            [FromSingleCompletion, FromLightAndDynamicEvaluation, PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
+                            [FromLightEvaluation, PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
 C̣onnectionStrings:FirstConnection =  |Data Source=first    <==
 F̣irstSetting =  |1
 Ṇested:Value =  |2
