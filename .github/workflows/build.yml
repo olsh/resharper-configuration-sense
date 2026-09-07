@@ -111,8 +111,20 @@ jobs:
           path: test/results/*.xml
           if-no-files-found: error
 
-      - name: Build and pack
-        run: .\build.cmd PackResharper PackRider --configuration Release
+      # VerifyRider depends on PackRider, so this packs and verifies in one NUKE run and
+      # keeps the plugin verifier ahead of the uploads and the publish step, which is what
+      # stops a plugin that fails verification from reaching Marketplace
+      - name: Build, pack and verify
+        run: .\build.cmd PackResharper VerifyRider --configuration Release
+
+      # The verifier report only reaches the log at Debug level, so keep a readable copy
+      - name: Upload plugin verifier report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: plugin-verifier-report-${{ env.EXTENSION_VERSION }}
+          path: gradle-build/reports/pluginVerifier/
+          if-no-files-found: warn
 
       - name: Upload ReSharper package
         uses: actions/upload-artifact@v7
