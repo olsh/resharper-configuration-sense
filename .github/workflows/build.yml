@@ -88,17 +88,14 @@ jobs:
 
       - name: Set up Java
         # Only the JDK Gradle itself runs on. The Rider frontend is compiled with a toolchain
-        # matching the target platform, which Gradle provisions via the foojay resolver
+        # matching the target platform, which Gradle provisions via the foojay resolver. No Gradle
+        # cache: what it would hold is the Rider distribution, several gigabytes that go stale on
+        # every SDK bump and leave no room on the runner to unpack the new one, and restoring it
+        # took as long as downloading Rider afresh
         uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
-          cache: gradle
-          cache-dependency-path: |
-            build.gradle
-            settings.gradle
-            gradle.properties
-            gradle/wrapper/gradle-wrapper.properties
 
       - name: Validate solution
         run: dotnet sln Resharper.ConfigurationSense.slnx list
