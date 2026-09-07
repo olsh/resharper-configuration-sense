@@ -19,7 +19,7 @@ namespace Resharper.ConfigurationSense.Models
 
         protected override RichText GetDisplayName()
         {
-            var displayName = LookupUtil.FormatLookupString($"{_keyValueSetting.Key} = ");
+            var displayName = LookupUtil.FormatLookupString($"{_keyValueSetting.Key} = ", TextColor);
             LookupUtil.AddInformationText(displayName, _keyValueSetting.Value);
 
             return displayName;
