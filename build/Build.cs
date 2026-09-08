@@ -214,6 +214,20 @@ class Build : NukeBuild
             PublishExtensionVersion();
         });
 
+    // The Kotlin compiler already warns about deprecated platform API, but every Gradle line is
+    // logged at Debug, so the warning sits among hundreds of others and nobody reads it. The
+    // verifier reports it as a verdict instead, and fails the build on anything that truly breaks
+    Target VerifyRider => _ => _
+        .DependsOn(PackRider)
+        .Executes(() =>
+        {
+            // Each interpolation hole has to stay space-free: NUKE quotes any hole that contains
+            // spaces, which would collapse the properties into a single argument
+            Gradle(
+                @$"verifyPlugin -PPluginVersion={ExtensionVersion} -PProductVersion={RiderProductVersion} -PDotNetOutputDirectory={Solution.Resharper_ConfigurationSense_Rider.GetOutputDirectory(Configuration)} -PDotNetProjectName={Solution.Resharper_ConfigurationSense_Rider.Name}",
+                logger: GradleLogger);
+        });
+
     Target PublishReSharperPlugin => _ => _
         .DependsOn(PackResharper)
         .Requires(() => MarketplaceToken)

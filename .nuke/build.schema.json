@@ -32,7 +32,8 @@
         "Restore",
         "RunIde",
         "Test",
-        "UpdateSdkVersion"
+        "UpdateSdkVersion",
+        "VerifyRider"
       ]
     },
     "Verbosity": {
