@@ -2,13 +2,12 @@
 Prefix: """
 Count: 5
 Focus: Hard
-Rules: [\w] => add_to_prefix
 Range: "var section = configuration.GetSection("♦");"
                                                ▲▲△
 
 ##### RELEVANCE SORT #####
 
-                            [FromLightEvaluation, PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
+                            [PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
 C̣onnectionStrings =  |{
   "FirstConnection": "Data Source=first"
 }    <==

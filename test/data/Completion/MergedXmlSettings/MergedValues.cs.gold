@@ -2,13 +2,12 @@
 Prefix: """
 Count: 1
 Focus: Hard
-Rules: [\w] => add_to_prefix
 Range: "var value = ConfigurationManager.AppSettings["♦"];"
                                                      ▲▲△
 
 ##### RELEVANCE SORT #####
 
-                            [FromLightEvaluation, PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
+                            [PrefixNoCaseMatch, NotObsolete, ObsoleteRuleApplied, NormalSelectionPriority, Other]
 ṢharedSetting =  |from app.config, from web.config    <==
 
 ##### ALPHABETIC SORT #####

@@ -57,9 +57,27 @@ Both pack targets call `PublishExtensionVersion()`, which reports the version to
 
 Bumping the SDK therefore only requires editing `Directory.Build.props`.
 
+`--sdk-version-override <version>` (NUKE also reads it from the `SDK_VERSION_OVERRIDE` environment variable) replaces that value for a single run without touching the file: every target except `UpdateSdkVersion` builds, tests and packs against it, and the restore and build receive it as the `SdkVersion` global property so the pinned SDK packages follow it. `build.cmd Test --sdk-version-override 2026.2.2` checks a change against another wave. The output and `obj` directories are not keyed by SDK version and there is no `Clean` target, so delete `bin`/`obj` under `src/Resharper.ConfigurationSense/` and `test/src/` when switching the override locally; otherwise the previous SDK's leftovers get mixed into the build. CI starts from a fresh runner and is unaffected.
+
+### Releasing to the stable wave while master tracks an EAP
+
+`master` follows the prerelease train for most of a cycle, and every part of a release's identity comes from that one `SdkVersion`: the version, the `Wave` range, the Rider `ProductVersion` and the Marketplace channel. A release cut from master therefore reaches EAP users only. The `sdk-version` dispatch input overrides the SDK for one run:
+
+```sh
+gh workflow run build.yml --ref master -f publish=true -f sdk-version=2026.2.2
+```
+
+Everything follows the override. A stable value sends the Rider plugin to the `default` channel and drops the prerelease flag on its own, so no maintenance branch is needed. The same dispatch without `publish=true` is a dry run.
+
+The file stays untouched, so the tagged commit still declares master's SDK; the release notes state the effective one instead. Leaving the file alone also keeps the `SdkVersion` push trigger meaning what it means, and it is why the value cannot just be flipped and flipped back: each flip would publish.
+
+A maintenance branch is still the only home for a stable fix whose source has to *diverge* from `master`. The input covers the common case where the source is the same.
+
+The default gets one thing wrong. GitHub gives the Latest badge to every new stable release, so publishing an override for an *older* wave after a newer stable has shipped takes the badge away from the newer one. Fix that with `gh release edit <tag> --latest=false`. Releasing an older wave next to a *prerelease* is fine, because a prerelease never holds the badge.
+
 ### Adopting a new SDK
 
-The `SDK update` workflow polls nuget.org daily and proposes the bump itself. `build.cmd UpdateSdkVersion` is what it runs: the target reads the versions published for all four SDK packages, keeps only those every one of them has, and picks a target under the wave policy. While the adopted version is stable only a higher wave qualifies, because a same-wave patch is already covered by the `Wave` dependency range the package declares; once it is a prerelease the whole train is followed, `eap01` through `rc01` to the stable release that closes the wave. `--sdk-version-override <version>` adopts a specific version instead, which is the way to take a same-wave patch.
+The `SDK update` workflow polls nuget.org daily and proposes the bump itself. `build.cmd UpdateSdkVersion` is what it runs: the target reads the versions published for all four SDK packages, keeps only those every one of them has, and picks a target under the wave policy. While the adopted version is stable only a higher wave qualifies, because a same-wave patch is already covered by the `Wave` dependency range the package declares; once it is a prerelease the whole train is followed, `eap01` through `rc01` to the stable release that closes the wave. `--sdk-version-override <version>` adopts a specific version instead, which is the way to take a same-wave patch. On every target the flag means "use this SDK version instead of the one in `Directory.Build.props`"; only `UpdateSdkVersion` acts on it by rewriting the file, and everywhere else it just builds against that version.
 
 The workflow then commits the bump to `sdk-update/<version>`, opens a pull request with auto-merge enabled, and lets `Build and test` decide. Green merges to `master`, which publishes; red leaves the pull request open, which is the normal outcome for a wave change. Expect to fix binding redirects in `test/src/app.config`, `.gold` expectations, SDK API breaks, and sometimes `build.gradle` (the `bundledModule` line especially) and the Gradle wrapper. A stale red pull request is closed as superseded when the next version comes along.
 
@@ -164,6 +182,14 @@ framework writes next to it as `.cs.tmp`, check the behaviour is what you meant,
 `.tmp` over the `.gold`. Marker placement, the separator width and the encoding (UTF-8 with BOM,
 CRLF) are framework details.
 
+The completion golds have to hold for both the stable wave and the EAP, because a release can be
+built against an overridden SDK (see "Releasing to the stable wave while master tracks an EAP"). The
+framework's dump is not stable across waves: 2026.3 added a `Rules:` line and replaced the
+`FromSingleCompletion, FromLightAndDynamicEvaluation` flags with `FromLightEvaluation`. Neither says
+anything about this plugin's items, so `SettingsCompletionTestBase` overrides `ExecuteWithGold` and
+removes them before comparing. The `.tmp` it writes is already normalized. If a future wave changes
+some other part of the engine dump, extend that normalization rather than splitting the golds by wave.
+
 Not covered, because the test framework cannot model them: **dependent files**
 (`web.Release.config`, `appsettings.Development.json` - they need `DependentUpon` metadata, and test
 projects are built from a flat file set), **user secrets** (`ReadSecretsSafe` reads `%APPDATA%`
@@ -216,6 +242,8 @@ structured-logging sidesteps both by keeping its scratch solutions in `test/manu
 GitHub Actions (`.github/workflows/build.yml`), `windows-2025`, .NET 10 and Temurin 21. On every push and pull request against `master` it runs `build.cmd Test --configuration Release`, then `build.cmd PackResharper PackRider --configuration Release`, and uploads the NUnit result files, the `.nupkg` and the Rider `.zip` as run artifacts; the two packages are named after `EXTENSION_VERSION`.
 
 Publishing runs the two publish targets and then cuts a GitHub release tagged with the extension version (`--prerelease` when the version carries an EAP suffix). The `Decide whether to publish` step turns it on for a manual `workflow_dispatch` with `publish: true`, and also for a push to `master` that changes `SdkVersion` in `Directory.Build.props` - which is how an SDK update ships itself. That comparison is why the checkout uses `fetch-depth: 0`, and why `cancel-in-progress` is narrowed to pull requests: a publishing push must not be cancelled half way through. The path needs the `JETBRAINS_MARKETPLACE_TOKEN` repository secret.
+
+The dispatch also takes an `sdk-version` input, which the build job exports as `SDK_VERSION_OVERRIDE` so that every `build.cmd` step builds against it; see "Releasing to the stable wave while master tracks an EAP". It has no default, so every other run gets an empty string, which NUKE treats as unset. When it is set, the release job puts a line naming the effective SDK at the top of the generated notes.
 
 `.github/workflows/sdk-update.yml` proposes those SDK bumps daily - see "Adopting a new SDK". It is the only thing in CI that needs `AUTOMATION_TOKEN`.
 

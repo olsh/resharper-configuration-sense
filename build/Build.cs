@@ -39,12 +39,25 @@ class Build : NukeBuild
     {
         // Read straight from the props file rather than through Solution.GetProperty: evaluating a
         // net472 project pulls in MSBuild, and UpdateSdkVersion runs on a Linux runner
-        SdkVersion = XDocument
+        SdkVersionFromProps = XDocument
             .Load((RootDirectory / "Directory.Build.props").ToString())
             .Descendants()
-            .Single(x => x.Name.LocalName == "SdkVersion")
+            .Single(x => x.Name.LocalName == SdkVersionProperty)
             .Value;
-        SdkVersion.NotNull("Unable to detect SDK version");
+        SdkVersionFromProps.NotNull("Unable to detect SDK version");
+
+        // Everything a release declares is derived from this one value, so overriding it is all it
+        // takes to build the same source for another wave. The file itself is left alone, which keeps
+        // the SdkVersion push trigger meaning what it means
+        SdkVersion = string.IsNullOrEmpty(SdkVersionOverride) ? SdkVersionFromProps : SdkVersionOverride;
+
+        if (SdkVersion != SdkVersionFromProps)
+        {
+            Log.Information(
+                "The effective JetBrains SDK is {Effective}; Directory.Build.props declares {Declared}",
+                SdkVersion,
+                SdkVersionFromProps);
+        }
 
         var versionMatch = Regex.Match(
             SdkVersion,
@@ -62,6 +75,7 @@ class Build : NukeBuild
             ? SdkVersion
             : $"{SdkVersionWithoutSuffix}.{GitHubActions.RunNumber}{SdkVersionSuffix}";
         var sdkMatch = Regex.Match(SdkVersion, @"\d{2}(\d{2}).(\d).*", RegexOptions.None, RegexTimeout);
+        Assert.True(sdkMatch.Success, $"Unable to derive a wave version from the SDK version '{SdkVersion}'");
         WaveMajorVersion = int.Parse(sdkMatch.Groups[1]
             .Value + sdkMatch.Groups[2]
             .Value);
@@ -78,7 +92,10 @@ class Build : NukeBuild
 
     [Parameter("Solution to open in the sandboxed IDE")] readonly AbsolutePath RunIdeSolution;
 
-    [Parameter("Adopt this SDK version instead of the one the wave policy picks")] readonly string SdkVersionOverride;
+    // UpdateSdkVersion adopts this version into Directory.Build.props; every other target builds against
+    // it and leaves the file alone, which is how a fix reaches the current stable wave while master
+    // follows the EAP train
+    [Parameter("Use this SDK version instead of the one in Directory.Build.props")] readonly string SdkVersionOverride;
 
     [Solution(GenerateProjects = true)] readonly Solution Solution;
 
@@ -87,6 +104,10 @@ class Build : NukeBuild
     // Every regex here runs over a version string of a couple of dozen characters, so the bound is
     // only ever reached by a runaway
     static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
+
+    // The MSBuild property Directory.Build.props declares, and the one every project pins its SDK
+    // package to. An override reaches the projects as a global property under the same name
+    const string SdkVersionProperty = "SdkVersion";
 
     // Every project pins its SDK package to $(SdkVersion), and JetBrains does not always push the
     // four of them at the same minute, so a version counts as available only once all of them have it
@@ -103,6 +124,10 @@ class Build : NukeBuild
     string ExtensionVersion { get; set; }
 
     string SdkVersion { get; set; }
+
+    // What the file literally declares, which is what UpdateSdkVersion compares against and reports;
+    // SdkVersion above is the one the build actually uses
+    string SdkVersionFromProps { get; set; }
 
     string SdkVersionSuffix { get; set; }
 
@@ -149,17 +174,23 @@ class Build : NukeBuild
     // EAP builds must not reach the stable channel of the Marketplace
     string PluginChannel => string.IsNullOrEmpty(SdkVersionSuffix) ? "default" : "eap";
 
+    // Every project pins its SDK package to $(SdkVersion), and an override does not rewrite the file,
+    // so a global property is what carries it into the restore
     Target Restore => _ => _
         .Executes(() =>
         {
-            DotNetRestore(s =>
-                s.SetProjectFile(Solution.Resharper_ConfigurationSense));
-            DotNetRestore(s =>
-                s.SetProjectFile(Solution.Resharper_ConfigurationSense_Rider));
-            DotNetRestore(s =>
-                s.SetProjectFile(Solution.Resharper_ConfigurationSense_Tests));
-            DotNetRestore(s =>
-                s.SetProjectFile(Solution.Resharper_ConfigurationSense_Rider_Tests));
+            DotNetRestore(s => s
+                .SetProjectFile(Solution.Resharper_ConfigurationSense)
+                .SetProperty(SdkVersionProperty, SdkVersion));
+            DotNetRestore(s => s
+                .SetProjectFile(Solution.Resharper_ConfigurationSense_Rider)
+                .SetProperty(SdkVersionProperty, SdkVersion));
+            DotNetRestore(s => s
+                .SetProjectFile(Solution.Resharper_ConfigurationSense_Tests)
+                .SetProperty(SdkVersionProperty, SdkVersion));
+            DotNetRestore(s => s
+                .SetProjectFile(Solution.Resharper_ConfigurationSense_Rider_Tests)
+                .SetProperty(SdkVersionProperty, SdkVersion));
         });
 
     Target Compile => _ => _
@@ -170,6 +201,9 @@ class Build : NukeBuild
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .SetVersionPrefix(ExtensionVersion)
+                // The build has to evaluate the same package versions the restore resolved, or the
+                // plugin would be tested against one wave and shipped for another
+                .SetProperty(SdkVersionProperty, SdkVersion)
                 .EnableNoRestore());
         });
 
@@ -286,10 +320,12 @@ class Build : NukeBuild
         .Executes(async () =>
         {
             var availableVersions = await GetPublishedSdkVersions();
-            var currentVersion = NuGetVersion.Parse(SdkVersion);
+            // This target is the one that changes the file, so it compares against what the file says
+            // rather than against the version an override would have the rest of the build use
+            var currentVersion = NuGetVersion.Parse(SdkVersionFromProps);
 
             NuGetVersion targetVersion;
-            if (SdkVersionOverride != null)
+            if (!string.IsNullOrEmpty(SdkVersionOverride))
             {
                 var requestedVersion = NuGetVersion.Parse(SdkVersionOverride);
                 targetVersion = availableVersions
@@ -303,7 +339,7 @@ class Build : NukeBuild
 
             if (targetVersion == null || targetVersion.Equals(currentVersion))
             {
-                Log.Information("The JetBrains SDK {Version} is up to date", SdkVersion);
+                Log.Information("The JetBrains SDK {Version} is up to date", SdkVersionFromProps);
                 PublishGitHubOutput("sdk-update-available", "false");
 
                 return;
@@ -319,12 +355,12 @@ class Build : NukeBuild
                 RegexOptions.None,
                 RegexTimeout));
 
-            Log.Information("Updated the JetBrains SDK from {Current} to {Target}", SdkVersion, targetVersion);
-            ReportSummary(_ => _.AddPair("SDK", $"{SdkVersion} -> {targetVersion}"));
+            Log.Information("Updated the JetBrains SDK from {Current} to {Target}", SdkVersionFromProps, targetVersion);
+            ReportSummary(_ => _.AddPair("SDK", $"{SdkVersionFromProps} -> {targetVersion}"));
 
             PublishGitHubOutput("sdk-update-available", "true");
             PublishGitHubOutput("sdk-version", targetVersion.ToString());
-            PublishGitHubOutput("previous-sdk-version", SdkVersion);
+            PublishGitHubOutput("previous-sdk-version", SdkVersionFromProps);
         });
 
     static async Task<IReadOnlyCollection<NuGetVersion>> GetPublishedSdkVersions()
