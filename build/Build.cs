@@ -42,7 +42,7 @@ class Build : NukeBuild
         SdkVersionFromProps = XDocument
             .Load((RootDirectory / "Directory.Build.props").ToString())
             .Descendants()
-            .Single(x => x.Name.LocalName == "SdkVersion")
+            .Single(x => x.Name.LocalName == SdkVersionProperty)
             .Value;
         SdkVersionFromProps.NotNull("Unable to detect SDK version");
 
@@ -104,6 +104,10 @@ class Build : NukeBuild
     // Every regex here runs over a version string of a couple of dozen characters, so the bound is
     // only ever reached by a runaway
     static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
+
+    // The MSBuild property Directory.Build.props declares, and the one every project pins its SDK
+    // package to. An override reaches the projects as a global property under the same name
+    const string SdkVersionProperty = "SdkVersion";
 
     // Every project pins its SDK package to $(SdkVersion), and JetBrains does not always push the
     // four of them at the same minute, so a version counts as available only once all of them have it
@@ -177,16 +181,16 @@ class Build : NukeBuild
         {
             DotNetRestore(s => s
                 .SetProjectFile(Solution.Resharper_ConfigurationSense)
-                .SetProperty("SdkVersion", SdkVersion));
+                .SetProperty(SdkVersionProperty, SdkVersion));
             DotNetRestore(s => s
                 .SetProjectFile(Solution.Resharper_ConfigurationSense_Rider)
-                .SetProperty("SdkVersion", SdkVersion));
+                .SetProperty(SdkVersionProperty, SdkVersion));
             DotNetRestore(s => s
                 .SetProjectFile(Solution.Resharper_ConfigurationSense_Tests)
-                .SetProperty("SdkVersion", SdkVersion));
+                .SetProperty(SdkVersionProperty, SdkVersion));
             DotNetRestore(s => s
                 .SetProjectFile(Solution.Resharper_ConfigurationSense_Rider_Tests)
-                .SetProperty("SdkVersion", SdkVersion));
+                .SetProperty(SdkVersionProperty, SdkVersion));
         });
 
     Target Compile => _ => _
@@ -199,7 +203,7 @@ class Build : NukeBuild
                 .SetVersionPrefix(ExtensionVersion)
                 // The build has to evaluate the same package versions the restore resolved, or the
                 // plugin would be tested against one wave and shipped for another
-                .SetProperty("SdkVersion", SdkVersion)
+                .SetProperty(SdkVersionProperty, SdkVersion)
                 .EnableNoRestore());
         });
 

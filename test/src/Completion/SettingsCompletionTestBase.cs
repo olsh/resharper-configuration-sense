@@ -21,17 +21,23 @@ namespace Resharper.ConfigurationSense.Tests.Completion
         Inherits = true)]
     public abstract class SettingsCompletionTestBase : CodeCompletionTestBase
     {
+        // Both patterns run over a completion dump of a few dozen lines, so the bound is only ever
+        // reached by a runaway
+        private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
+
         // 2026.3 started printing the prefix char handling rules; 2026.2 has no such line
         private static readonly Regex PrefixRulesLine = new Regex(
             @"^Rules: .*(\r?\n)?",
-            RegexOptions.Multiline);
+            RegexOptions.Multiline,
+            RegexTimeout);
 
         // The evaluation-source flags lead the relevance line: 2026.2 reports FromSingleCompletion and
         // FromLightAndDynamicEvaluation where 2026.3 reports FromLightEvaluation. Anchored to the start
         // of that line, so a setting key that happens to begin with From is left alone
         private static readonly Regex EvaluationSourceFlags = new Regex(
             @"(?<=^[ \t]*\[)(From\w+, )+",
-            RegexOptions.Multiline);
+            RegexOptions.Multiline,
+            RegexTimeout);
 
         protected abstract string SubPath { get; }
 
